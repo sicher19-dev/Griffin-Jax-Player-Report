@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>No Brand Baseball Analytics | Player Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#092C5C; --navy-2:#0F3B75; --sky:#8FBCE6; --sky-soft:#DCEAF7;
+  --gold:#F5D130; --gold-soft:#FFF6CC;
+  --paper:#EDF2F8; --panel:#FFFFFF; --ink:#15243A; --muted:#5B6B82; --line:#D3DDE9;
+  --flag:#C7372F;
+  --FF:#D22D49; --SI:#F08A00; --CH:#1A9E36; --SW:#B8901C; --CU:#0098B8; --SL:#7B5CC4; --FC:#8C4A2F; --FS:#3C7D8C;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* header */
+.top{background:var(--navy);color:#fff}
+.top-in{max-width:1180px;margin:0 auto;padding:18px 20px 0}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.02em;color:var(--sky)}
+.brand i{display:inline-block;width:22px;height:22px;border:2px solid var(--gold);border-radius:50%;position:relative}
+.brand i:after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--gold)}
+.brand .int{margin-left:auto;font-family:var(--body);font-size:12px;color:#fff;background:rgba(255,255,255,.1);padding:2px 8px;border-radius:3px}
+.who{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 28px;margin:14px 0 16px}
+.who h1{font-family:var(--display);font-weight:800;font-size:clamp(44px,8vw,76px);line-height:.88;margin:0;text-transform:uppercase;letter-spacing:-.01em}
+.who h1 span{display:block;font-size:.42em;font-weight:600;color:var(--sky);letter-spacing:0;text-transform:none;margin-bottom:4px}
+.facts{display:flex;gap:22px;flex-wrap:wrap;padding-bottom:6px}
+.facts div{font-family:var(--display);font-size:30px;font-weight:700;line-height:1}
+.facts small{display:block;font-family:var(--body);font-size:12px;font-weight:500;color:var(--sky);margin-top:3px}
+.switch{display:flex;gap:2px}
+.switch button{background:none;border:0;padding:10px 16px 12px;font-family:var(--display);font-size:19px;font-weight:600;color:var(--sky);cursor:pointer;border-radius:6px 6px 0 0}
+.switch button[aria-pressed=true]{background:var(--paper);color:var(--navy)}
+.switch button .soon{font-family:var(--body);font-size:11px;font-weight:500;margin-left:6px;opacity:.8}
+
+main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}
+
+/* game rail */
+.rail{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.game{flex:0 0 auto;min-width:150px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;position:relative}
+.game[aria-pressed=true]{border-color:var(--navy);box-shadow:inset 0 -4px 0 var(--gold)}
+.game b{display:block;font-family:var(--display);font-size:22px;line-height:1.05}
+.game .opp{font-weight:600}
+.game .ln{font-size:12px;color:var(--muted)}
+.game .cap{font-size:12px;margin-top:4px}
+.game .park{position:absolute;top:8px;right:10px;font-size:11px;color:var(--flag);font-weight:600}
+.game.all b{color:var(--navy)}
+
+/* tabs */
+.tabs{display:flex;gap:4px;margin:18px 0 14px;border-bottom:2px solid var(--line);overflow-x:auto}
+.tabs button{background:none;border:0;padding:8px 12px;font-family:var(--display);font-size:18px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabs button[aria-selected=true]{color:var(--navy);border-bottom-color:var(--navy)}
+
+h2{font-family:var(--display);font-size:30px;font-weight:700;line-height:1.05;margin:6px 0 4px;color:var(--navy)}
+h3{font-family:var(--display);font-size:21px;font-weight:600;margin:0 0 6px;color:var(--navy)}
+.lede{color:var(--muted);max-width:72ch;margin:0 0 16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media (max-width:900px){.grid3,.grid2{grid-template-columns:1fr}}
+
+/* notes */
+.col h3{display:flex;align-items:center;gap:8px}
+.col h3:before{content:"";width:12px;height:12px;border-radius:2px;background:var(--navy)}
+.col.moved h3:before{background:var(--gold);outline:1px solid #C9A800}
+.col.watch h3:before{background:#fff;border:2px solid var(--navy)}
+.note{padding:10px 0;border-top:1px solid var(--line)}
+.note b{display:block;font-weight:600;line-height:1.3;margin-bottom:2px}
+.note p{margin:0;color:#34455D;font-size:14px}
+.stamp{font-size:12px;color:var(--muted)}
+
+/* movers */
+.mover{display:grid;grid-template-columns:minmax(150px,1.4fr) 1fr 90px;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.mover .nm{font-weight:600;line-height:1.25}
+.mover .nm small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.mover .ag{font-size:12px;color:var(--muted);text-align:right}
+.mover .ag b{display:block;font-family:var(--display);font-size:20px;color:var(--ink)}
+.empty{color:var(--muted);font-style:italic;padding:8px 0}
+
+/* tables */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:6px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left;white-space:normal;min-width:190px}
+thead th{font-weight:600;color:var(--muted);font-size:12px;position:sticky;top:0;background:var(--panel);border-bottom:2px solid var(--line)}
+tbody tr:hover td{background:#F5F8FC}
+td.grp{background:var(--sky-soft)!important;font-family:var(--display);font-weight:600;font-size:16px;color:var(--navy)}
+.unit{color:var(--muted);font-size:12px}
+.fixed{background:var(--gold-soft);box-shadow:inset 3px 0 0 var(--gold);cursor:help}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:1px 7px;border-radius:3px;color:#fff}
+.pt{display:inline-flex;align-items:center;gap:5px;font-weight:600}
+.pt:before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c)}
+.avgcol{background:#F4F7FB}
+
+/* controls */
+.ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.ctl select,.ctl input{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;min-height:36px}
+.ctl input{min-width:200px}
+.btn{background:var(--navy);color:#fff;border:0;border-radius:6px;padding:7px 14px;cursor:pointer;font-weight:600;min-height:36px}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{background:#fff;border:0;padding:6px 12px;cursor:pointer;min-height:34px}
+.seg button[aria-pressed=true]{background:var(--navy);color:#fff}
+
+/* small multiples */
+.sm{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.card .t{font-weight:600;line-height:1.25;font-size:14px}
+.card .u{font-size:12px;color:var(--muted)}
+svg text{font-family:var(--body)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin:4px 0 10px}
+.legend .hol:before{background:#fff;border:2px solid var(--muted)}
+.legend span.pt.hol{font-weight:500;color:var(--muted)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+.pend{border:2px dashed var(--sky);border-radius:10px;padding:28px;text-align:center;background:#fff}
+.pend h2{margin-bottom:8px}
+.log li{margin:4px 0}
+@media (max-width:640px){
+  .mover{grid-template-columns:1fr auto}
+  .mover>div:nth-child(2){grid-column:1 / -1;order:3}
+  .seqsvg{min-width:760px}
+  main{padding:14px 12px 50px}
+  .panel{padding:14px 12px}
+}
+footer{max-width:1180px;margin:0 auto;padding:0 20px 30px;color:var(--muted);font-size:12px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{.switch,.tabs,.ctl{display:none}.top{background:#fff;color:var(--ink)}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><i aria-hidden="true"></i>No Brand Baseball Analytics<span class="int">Internal only</span></div>
+    <div class="who">
+      <h1 id="pname"><span id="pteam"></span></h1>
+      <div class="facts" id="facts"></div>
+    </div>
+    <nav class="switch" aria-label="Report">
+      <button data-report="bio" aria-pressed="true">Biomechanics</button>
+      <button data-report="ana" aria-pressed="false">Analytics<span class="soon">next</span></button>
+    </nav>
+  </div>
+</header>
+<main id="app"></main>
+<footer id="foot"></footer>
+
+<script>
+/* ---------- load player data (index.html?p=<slug>) ---------- */
+(function(){
+  const slug = new URLSearchParams(location.search).get('p') || 'griffin-jax';
+  if (window.NB_BIOMECH) { boot(); return; }          // standalone build has data inlined
+  let left = 2;
+  const done = () => { if (--left === 0) boot(); };
+  ['data/'+slug+'.js','data/'+slug+'.notes.js'].forEach(src=>{
+    const s=document.createElement('script'); s.src=src; s.onload=done;
+    s.onerror=()=>{ if(src.endsWith('notes.js')) done(); else document.getElementById('app').innerHTML='<div class="panel">No data file found for <b>'+slug+'</b>. Run tools/build_biomech.py.</div>'; };
+    document.head.appendChild(s);
+  });
+})();
+
+function boot(){
+const D = window.NB_BIOMECH, N = window.NB_NOTES || null;
+const S = D.sessions;                           // sorted by date
+const M = D.metrics, MK = Object.fromEntries(M.map(m=>[m.key,m]));
+const PT = {FF:'4-Seam',SI:'Sinker',CH:'Changeup',SW:'Sweeper',CU:'Curveball',SL:'Slider',FC:'Cutter',FS:'Splitter'};
+const PORDER = ['FF','SI','CH','SW','CU','SL','FC','FS'];
+const GROUPS = {release:'Release',sequence:'Sequence',arm:'Arm action',load:'Arm load (per pitch)',gametotal:'Arm load (game totals)',trunk:'Trunk',pelvis:'Pelvis and hips',legs:'Legs and feet',com:'Body drift'};
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const md = d => { const [y,m,dd]=d.split('-'); return (+m)+'/'+(+dd); };
+const longDate = d => { const [y,m,dd]=d.split('-'); return MONTHS[+m-1]+' '+(+dd); };
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pc = p => `var(--${p})`;
+const pitchesOf = s => PORDER.filter(p=>s.pitches[p]);
+const allPitches = PORDER.filter(p=>S.some(s=>s.pitches[p]));
+
+/* home park = the venue with the most captured games; others get flagged */
+const venueCount = {}; S.forEach(s=>{ if(s.venue) venueCount[s.venue]=(venueCount[s.venue]||0)+1; });
+const homePark = Object.entries(venueCount).sort((a,b)=>b[1]-a[1])[0]?.[0];
+const away = s => s.venue && s.venue!==homePark;
+
+function dec(unit, v){
+  if (v==null || isNaN(v)) return '–';
+  const a=Math.abs(v);
+  let d = {'°/s':0,'°/s²':0,'N':0,'×BW':2,'ratio':2}[unit];
+  if (d===undefined) d = (unit==='ms' && Number.isInteger(v)) ? 0 : 1;
+  if (unit==='N·m' && a>=1000) d=0;
+  if (unit==='N' || unit==='°/s' || unit==='°/s²' || a>=1000) return Math.round(v).toLocaleString('en-US');
+  return v.toFixed(d);
+}
+const fmt = (k,v) => (MK[k]?.group==='gametotal' && v!=null) ? Math.round(v).toLocaleString('en-US') : dec(MK[k]?.unit, v);
+const val = (s,k,p) => p ? s.pitches[p]?.v?.[k] : s.all?.[k];
+const fixedCell = (s,k,p) => (s.flags||[]).find(f=>(f.type==='fix'||f.type==='text') && f.key===k && f.pitch===p);
+
+/* ---------- state ---------- */
+const st = { report:'bio', tab:'summary', focus: S[S.length-1].date, dataMode:'game', dataGroup:'all', q:'' };
+
+/* ---------- header ---------- */
+const P = D.player;
+document.getElementById('pname').insertAdjacentText('beforeend', P.name);
+document.getElementById('pteam').textContent = `${P.throws}HP  |  ${P.team}`;
+const totalCap = S.reduce((a,s)=>a+s.captured,0);
+document.getElementById('facts').innerHTML =
+  `<div>${S.length}<small>games captured</small></div><div>${totalCap}<small>pitches on file</small></div><div>${md(S[0].date)}–${md(S[S.length-1].date)}<small>${P.season} window</small></div>`;
+document.getElementById('foot').textContent = `No Brand Baseball Analytics  |  built ${D.built}  |  internal use only`;
+document.querySelectorAll('.switch button').forEach(b=>b.onclick=()=>{st.report=b.dataset.report;render();});
+
+const TABS = [['summary','Summary'],['sequence','Sequence'],['pitches','Pitch types'],['load','Arm load'],['body','Body'],['data','All data'],['log','Data log']];
+
+/* ---------- helpers: stats ---------- */
+const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
+function baselineFor(focus){
+  // compare the focus game to the other games in the same park; fall back to all other games
+  const f = S.find(s=>s.date===focus);
+  let base = S.filter(s=>s.date!==focus && s.venue===f.venue);
+  if (base.length===0) base = S.filter(s=>s.date!==focus);
+  return {f, base};
+}
+function movers(focus){
+  const {f, base} = baselineFor(focus);
+  if (!base.length) return [];
+  const out=[];
+  M.forEach(m=>{
+    if (m.group==='gametotal' || m.unit==='ratio' || m.unit==='×BW') return;
+    const fv=f.all[m.key]; if (fv==null) return;
+    const bv=mean(base.map(s=>s.all[m.key]).filter(v=>v!=null));
+    // noise scale: pitch-to-pitch spread inside the baseline games
+    const spreads = base.map(s=>{ const xs=pitchesOf(s).map(p=>s.pitches[p].v[m.key]).filter(v=>v!=null); return xs.length>1? Math.max(...xs)-Math.min(...xs):0; });
+    const between = base.length>1 ? Math.max(...base.map(s=>s.all[m.key]))-Math.min(...base.map(s=>s.all[m.key])) : 0;
+    const noise = Math.max(mean(spreads)/2, between, 0.5, Math.abs(bv)*0.01);
+    const diff=fv-bv, z=diff/noise;
+    // agreement: how many pitch types moved the same way vs their own baseline
+    let agree=0, n=0;
+    pitchesOf(f).forEach(p=>{
+      const b=base.map(s=>s.pitches[p]?.v[m.key]).filter(v=>v!=null); const x=f.pitches[p].v[m.key];
+      if (!b.length || x==null) return; n++;
+      if (Math.sign(x-mean(b))===Math.sign(diff) && Math.abs(x-mean(b))>0) agree++;
+    });
+    if (Math.abs(z)>=1.5 && n>=3 && agree>=n-1) out.push({m,fv,bv,diff,z,agree,n});
+  });
+  return out.sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+}
+function repeats(){
+  // pitch-type differences that point the same way in every game
+  const out=[]; if (S.length<2) return out;
+  M.forEach(m=>{
+    if (m.group==='gametotal' || m.unit==='ratio' || m.unit==='×BW' || m.unit==='vel') return;
+    allPitches.forEach(p=>{
+      const ds=[], sp=[];
+      for (const s of S){
+        const x=s.pitches[p]?.v[m.key]; if (x==null) return;
+        const others=pitchesOf(s).filter(q=>q!==p).map(q=>s.pitches[q].v[m.key]).filter(v=>v!=null);
+        if (others.length<2) return;
+        ds.push(x-mean(others)); sp.push(Math.max(...others)-Math.min(...others));
+      }
+      if (ds.length!==S.length) return;
+      const sg=Math.sign(ds[0]); if (!ds.every(d=>Math.sign(d)===sg && d!==0)) return;
+      const minAbs=Math.min(...ds.map(Math.abs)); const noise=Math.max(mean(sp)/2,0.3);
+      if (minAbs/noise>=1.2) out.push({m,p,ds,score:minAbs/noise});
+    });
+  });
+  return out.sort((a,b)=>b.score-a.score);
+}
+
+/* ---------- svg helpers ---------- */
+function scale(d0,d1,r0,r1){ const k=(r1-r0)/((d1-d0)||1); return v=>r0+(v-d0)*k; }
+function nice(lo,hi){ if(lo===hi){lo-=1;hi+=1;} const pad=(hi-lo)*0.12; return [lo-pad,hi+pad]; }
+
+/* dot strip: one column per game, one dot per pitch type, bar = game average */
+function gameStrip(k, opts={}){
+  const W=opts.w||300, H=opts.h||120, L=38, R=8, T=10, B=24;
+  const vals=[]; S.forEach(s=>{ pitchesOf(s).forEach(p=>{const v=s.pitches[p].v[k]; if(v!=null) vals.push(v);}); });
+  if (!vals.length) return '';
+  const [lo,hi]=nice(Math.min(...vals),Math.max(...vals));
+  const y=scale(lo,hi,H-B,T), step=(W-L-R)/S.length;
+  let g=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(MK[k].label)} by game">`;
+  [lo+(hi-lo)*0.1, (lo+hi)/2, hi-(hi-lo)*0.1].forEach(t=>{ g+=`<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="#E3EAF2"/><text x="${L-4}" y="${y(t)+4}" font-size="10" text-anchor="end" fill="#5B6B82">${dec(MK[k].unit,t)}</text>`; });
+  S.forEach((s,i)=>{
+    const cx=L+step*(i+.5), foc=s.date===st.focus;
+    if (foc) g+=`<rect x="${cx-step/2+2}" y="${T-6}" width="${step-4}" height="${H-B-T+10}" fill="#FFF6CC" rx="4"/>`;
+    const a=s.all[k]; if(a!=null) g+=`<line x1="${cx-step*.32}" x2="${cx+step*.32}" y1="${y(a)}" y2="${y(a)}" stroke="#092C5C" stroke-width="2.5"/>`;
+    pitchesOf(s).forEach((p,j,arr)=>{ const v=s.pitches[p].v[k]; if(v==null) return;
+      const x=cx+(j-(arr.length-1)/2)*Math.min(7,step/7);
+      g+= away(s) ? `<circle cx="${x}" cy="${y(v)}" r="3.6" fill="#fff" stroke="${pc(p)}" stroke-width="1.8"><title>${md(s.date)} ${PT[p]}: ${fmt(k,v)}</title></circle>`
+                  : `<circle cx="${x}" cy="${y(v)}" r="3.8" fill="${pc(p)}"><title>${md(s.date)} ${PT[p]}: ${fmt(k,v)}</title></circle>`;
+    });
+    g+=`<text x="${cx}" y="${H-7}" font-size="11" text-anchor="middle" fill="${foc?'#092C5C':'#5B6B82'}" font-weight="${foc?600:400}">${md(s.date)}</text>`;
+  });
+  return g+'</svg>';
+}
+function legend(extra=true){
+  return `<div class="legend">${allPitches.map(p=>`<span class="pt" style="--c:${pc(p)}">${p} ${PT[p]}</span>`).join('')}
+  <span><svg width="22" height="8"><line x1="1" x2="21" y1="4" y2="4" stroke="#092C5C" stroke-width="2.5"/></svg> game average</span>
+  ${extra && S.some(away)?`<span class="pt hol" style="--c:#fff">open dot = not ${esc(homePark||'home park')}</span>`:''}</div>`;
+}
+
+/* ---------- views ---------- */
+function vRail(){
+  return `<div class="rail" role="group" aria-label="Focus game">${S.map(s=>{
+    const l=s.line;
+    return `<button class="game" data-g="${s.date}" aria-pressed="${st.focus===s.date}">
+      ${away(s)?`<span class="park">other park</span>`:''}
+      <b>${longDate(s.date)}</b><span class="opp">${s.home===false?'at ':'vs '}${esc(s.oppAbbr||'?')}</span>
+      <div class="ln">${l?`${l.ip} IP, ${l.h} H, ${l.er} ER, ${l.bb} BB, ${l.k} K`:'line not matched'}</div>
+      <div class="cap">${s.captured}${l?` of ${l.pc}`:''} pitches captured</div></button>`;}).join('')}</div>`;
+}
+function vTabs(){ return `<div class="tabs" role="tablist">${TABS.map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${st.tab===k}">${l}</button>`).join('')}</div>`; }
+
+function vSummary(){
+  const f=S.find(s=>s.date===st.focus); const {base}=baselineFor(st.focus);
+  const mv=movers(st.focus).slice(0,8);
+  const notes = N ? `<div class="panel"><div class="grid3">
+    ${[['steady','Holding steady',N.steady],['moved','What moved',N.moved],['watch','What we are watching',N.watching]].map(([c,h,arr])=>`
+    <div class="col ${c}"><h3>${h}</h3>${arr.map(n=>`<div class="note"><b>${esc(n.h)}</b><p>${esc(n.p)}</p></div>`).join('')}</div>`).join('')}
+    </div><p class="stamp">Notes written through ${longDate(N.through)}${S[S.length-1].date>N.through?` — games after this date are in the charts but not in these notes yet`:''}.</p></div>` : '';
+  const heads=['mprv','mtrv','meev','mhv','fc_pel_t','sep_fc','sh_rot_mer','arm_slot','stride','varus'];
+  return `<h2>${longDate(f.date)} ${f.home===false?'at':'vs'} ${esc(f.opp||'')}</h2>
+  <p class="lede">What changed in this game compared with his other ${base.length} ${base.length===1?'game':'games'}${away(f)?'':` at ${esc(homePark)}`}. A metric only shows up here if the game average moved well past his normal pitch-to-pitch spread <i>and</i> nearly every pitch type moved the same way.</p>
+  <div class="panel">
+    <h3>Biggest movers this game</h3>
+    ${mv.length? mv.map(o=>`<div class="mover"><div class="nm">${esc(o.m.label)}<small>${fmt(o.m.key,o.fv)} ${o.m.unit} this game, ${fmt(o.m.key,o.bv)} before</small></div>
+      <div>${moverBar(o)}</div><div class="ag"><b>${o.diff>0?'+':''}${fmt(o.m.key,o.diff)}</b>${o.agree} of ${o.n} pitch types</div></div>`).join('')
+      : `<div class="empty">Nothing moved past his normal spread. ${base.length<2?'More games at this park will sharpen this.':''}</div>`}
+  </div>
+  ${notes}
+  <h3>Headline numbers by game</h3>${legend()}
+  <div class="sm">${heads.filter(k=>MK[k]).map(k=>`<div class="card"><div class="t">${esc(MK[k].label)}</div><div class="u">${MK[k].unit}</div>${gameStrip(k)}</div>`).join('')}</div>`;
+}
+function moverBar(o){
+  const W=220,H=26, lo=Math.min(o.fv,o.bv), hi=Math.max(o.fv,o.bv), pad=(hi-lo)*0.6||1;
+  const x=scale(lo-pad,hi+pad,6,W-6);
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" aria-hidden="true"><line x1="6" x2="${W-6}" y1="13" y2="13" stroke="#E3EAF2" stroke-width="2"/>
+  <line x1="${x(o.bv)}" x2="${x(o.fv)}" y1="13" y2="13" stroke="#F5D130" stroke-width="6"/>
+  <circle cx="${x(o.bv)}" cy="13" r="5" fill="#fff" stroke="#092C5C" stroke-width="2"/><circle cx="${x(o.fv)}" cy="13" r="6" fill="#092C5C"/></svg>`;
+}
+
+function vSequence(){
+  const segs = S.map(s=>{ const q=s.summary; if(!q || q.hand==null) return null;
+    const tSh=-q.shoulder_to_br, tEl=tSh-q.elbow_to_shoulder, tTr=tEl-q.trunk_to_elbow, tPe=tTr-q.pelvis_to_trunk, tFc=tPe-q.fc_to_pelvis, tHa=tSh+q.shoulder_to_hand;
+    return {s, pts:[['Pelvis',tPe,q.pelvis],['Trunk',tTr,q.trunk],['Elbow',tEl,q.elbow],['Shoulder',tSh,q.shoulder],['Hand',tHa,q.hand]], tFc};
+  }).filter(Boolean);
+  const W=1000, rowH=78, T=40, H=T+rowH*segs.length+20, L=110, R=30;
+  const minT=Math.min(-150,...segs.map(x=>x.tFc))-5;
+  const x=scale(minT,15,L,W-R);
+  const col={Pelvis:'#8FBCE6',Trunk:'#4F86C0',Elbow:'#0F3B75',Shoulder:'#092C5C',Hand:'#F5D130'};
+  let g=`<svg class="seqsvg" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Kinematic sequence timing by game">`;
+  for(let t=-140;t<=10;t+=20){ g+=`<line x1="${x(t)}" x2="${x(t)}" y1="${T-12}" y2="${H-14}" stroke="${t===0?'#092C5C':'#E3EAF2'}" stroke-width="${t===0?2:1}"/><text x="${x(t)}" y="${T-18}" font-size="12" text-anchor="middle" fill="#5B6B82">${t===0?'release':t+' ms'}</text>`; }
+  segs.forEach((o,i)=>{
+    const cy=T+rowH*i+rowH/2, foc=o.s.date===st.focus;
+    if (foc) g+=`<rect x="0" y="${cy-rowH/2+4}" width="${W}" height="${rowH-8}" fill="#FFF6CC" rx="6"/>`;
+    g+=`<text x="8" y="${cy-4}" font-size="16" font-weight="600" fill="#092C5C">${md(o.s.date)} ${esc(o.s.oppAbbr||'')}</text><text x="8" y="${cy+14}" font-size="12" fill="#5B6B82">${Math.round(-o.tFc)} ms FS to release${away(o.s)?' *':''}</text>`;
+    g+=`<line x1="${x(o.tFc)}" x2="${x(o.pts[4][1])}" y1="${cy}" y2="${cy}" stroke="#C9D6E6" stroke-width="3"/>`;
+    g+=`<g><rect x="${x(o.tFc)-2}" y="${cy-14}" width="4" height="28" fill="#15243A"/><text x="${x(o.tFc)}" y="${cy+30}" font-size="11" text-anchor="middle" fill="#15243A">foot strike</text></g>`;
+    o.pts.forEach(([nm,t,v],j)=>{
+      const r=4+Math.sqrt(v)/9;
+      g+=`<circle cx="${x(t)}" cy="${cy}" r="${r}" fill="${col[nm]}" stroke="#fff" stroke-width="1.5"><title>${nm} peak ${Math.round(v).toLocaleString()}°/s at ${t} ms</title></circle>`;
+      const anc = nm==='Shoulder'?'end':nm==='Hand'?'start':'middle', dx = nm==='Shoulder'?-3:nm==='Hand'?3:0;
+      g+=`<text x="${x(t)+dx}" y="${cy-r-5}" font-size="11" text-anchor="${anc}" fill="#15243A" font-weight="600">${Math.round(v).toLocaleString()}</text>`;
+      g+=`<text x="${x(t)+dx}" y="${cy+r+13}" font-size="10" text-anchor="${anc}" fill="#5B6B82">${nm}</text>`;
+    });
+  });
+  g+='</svg>';
+  const f=S.find(s=>s.date===st.focus);
+
+  const keys=['mprv','fc_pel_t','mtrv','tr_acc','pel_elb_t','tr_elb_t','meev','meev_br_t','msrv','msrv_br_t','mhv','mhv_br_t'];
+  return `<h2>Sequence</h2><p class="lede">Peak rotational speed of each segment and when it peaks, measured back from ball release. Circle size follows speed. Numbers are game averages across every captured pitch.</p>
+  <div class="panel"><div class="tw">${g}</div>${S.some(away)?`<div class="stamp">* captured at a different park — compare with care</div>`:''}</div>
+  <div class="panel"><h3>${longDate(f.date)} by pitch type</h3><div class="tw">${pitchTable(f, keys)}</div></div>
+  <h3>By game</h3>${legend()}<div class="sm">${['mprv','mtrv','meev','msrv','mhv','fc_pel_t','tr_elb_t','tr_acc'].map(k=>`<div class="card"><div class="t">${esc(MK[k].label)}</div><div class="u">${MK[k].unit}</div>${gameStrip(k)}</div>`).join('')}</div>`;
+}
+
+function pitchTable(s, keys, group=false){
+  const ps=pitchesOf(s);
+  let h=`<table><thead><tr><th>Metric</th>${ps.map(p=>`<th><span class="pt" style="--c:${pc(p)}">${p}</span><br><span class="unit">${s.pitches[p].n} pitches</span></th>`).join('')}<th class="avgcol">Game</th><th>Unit</th></tr></thead><tbody>`;
+  let lastG=null;
+  keys.forEach(k=>{ const m=MK[k]; if(!m) return;
+    if (group && m.group!==lastG){ lastG=m.group; h+=`<tr><td class="grp" colspan="${ps.length+3}">${GROUPS[m.group]||m.group}</td></tr>`; }
+    h+=`<tr><td>${esc(m.label)}</td>${ps.map(p=>{ const fx=fixedCell(s,k,p); const v=s.pitches[p].v[k];
+      return `<td${fx?` class="fixed" title="Corrected from ${fx.raw}. ${esc(fx.why)}"`:''}>${fmt(k,v)}</td>`; }).join('')}
+      <td class="avgcol"><b>${fmt(k,s.all[k])}</b></td><td class="unit">${m.unit}</td></tr>`;
+  });
+  return h+'</tbody></table>';
+}
+
+function vPitches(){
+  const f=S.find(s=>s.date===st.focus);
+  // release window: side (x) vs height (y), all games faint, focus bold
+  const pts=[]; S.forEach(s=>pitchesOf(s).forEach(p=>{const v=s.pitches[p].v; if(v.rel_side!=null&&v.rel_height!=null) pts.push({s,p,x:v.rel_side,y:v.rel_height,a:v.arm_slot});}));
+  const W=520,H=340,L=46,R=16,T=16,B=40;
+  const [x0,x1]=nice(Math.min(...pts.map(q=>q.x)),Math.max(...pts.map(q=>q.x)));
+  const [y0,y1]=nice(Math.min(...pts.map(q=>q.y)),Math.max(...pts.map(q=>q.y)));
+  const X=scale(x0,x1,L,W-R), Y=scale(y0,y1,H-B,T);
+  let g=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Release window by pitch type">`;
+  for(let t=Math.ceil(x0);t<=x1;t++) g+=`<line x1="${X(t)}" x2="${X(t)}" y1="${T}" y2="${H-B}" stroke="#EEF2F7"/><text x="${X(t)}" y="${H-B+16}" font-size="11" text-anchor="middle" fill="#5B6B82">${t}</text>`;
+  for(let t=Math.ceil(y0);t<=y1;t++) g+=`<line x1="${L}" x2="${W-R}" y1="${Y(t)}" y2="${Y(t)}" stroke="#EEF2F7"/><text x="${L-6}" y="${Y(t)+4}" font-size="11" text-anchor="end" fill="#5B6B82">${t}</text>`;
+  g+=`<text x="${(L+W-R)/2}" y="${H-6}" font-size="12" text-anchor="middle" fill="#15243A">Release side (in) — wider to the right</text><text transform="translate(12 ${(T+H-B)/2}) rotate(-90)" font-size="12" text-anchor="middle" fill="#15243A">Release height (in)</text>`;
+  pts.filter(q=>q.s!==f).forEach(q=>{ g+=`<circle cx="${X(q.x)}" cy="${Y(q.y)}" r="5" fill="${pc(q.p)}" opacity=".22"><title>${md(q.s.date)} ${PT[q.p]}</title></circle>`; });
+  pts.filter(q=>q.s===f).forEach(q=>{ g+=`<circle cx="${X(q.x)}" cy="${Y(q.y)}" r="9" fill="${pc(q.p)}" stroke="#fff" stroke-width="2"><title>${PT[q.p]}: side ${q.x}, height ${q.y}, slot ${q.a}°</title></circle><text x="${X(q.x)+12}" y="${Y(q.y)+4}" font-size="12" font-weight="600" fill="#15243A">${q.p} ${q.a!=null?q.a.toFixed(1)+'°':''}</text>`; });
+  g+='</svg>';
+  const rp=repeats();
+  const keys=['arm_slot','rel_height','rel_side','rel_ext','stride','sh_rot_mer','abd_br','elb_flex_mer','pro_mer','pro_br','meev','msrv','mhv','varus','sh_force','tr_flex_br','lean_br','lk_flex_br'];
+  return `<h2>Pitch types</h2><p class="lede">Where each pitch comes out and what the body does differently to throw it. Large dots are ${longDate(f.date)}; faint dots are his other games. Labels show arm slot.</p>
+  <div class="grid2">
+    <div class="panel"><h3>Release window</h3>${g}<div class="legend">${allPitches.map(p=>`<span class="pt" style="--c:${pc(p)}">${p}</span>`).join('')}</div></div>
+    <div class="panel"><h3>Differences that repeat every game</h3>
+      <p class="stamp" style="margin-top:0">A pitch shows up here only if it sits on the same side of his other pitches in all ${S.length} games, by more than the normal spread.</p>
+      ${rp.length? rp.slice(0,10).map(o=>`<div class="mover" style="grid-template-columns:1fr auto"><div class="nm"><span class="pt" style="--c:${pc(o.p)}">${PT[o.p]}</span> ${o.ds[0]>0?'higher':'lower'}: ${esc(o.m.label.toLowerCase())}<small>vs his other pitches, by game: ${o.ds.map(d=>(d>0?'+':'')+dec(o.m.unit,d)).join(', ')} ${o.m.unit}</small></div></div>`).join('') : '<div class="empty">Needs at least two games.</div>'}
+    </div>
+  </div>
+  <div class="panel"><h3>${longDate(f.date)} by pitch type</h3><div class="tw">${pitchTable(f, keys)}</div></div>`;
+}
+
+function vLoad(){
+  const f=S.find(s=>s.date===st.focus);
+  const per=['varus','varus_mer','sh_force','sh_force_mer','sh_torque','sh_torque_mer'];
+  const norm=['varus_n','sh_force_n','sh_torque_n'];
+  const gt=['gt_varus','gt_sh_force','gt_sh_torque'];
+  let tot=`<table><thead><tr><th>Game</th><th>Pitches captured</th>${gt.map(k=>`<th>${esc(MK[k].label.replace('Game total: peak ','Peak ').replace('Game total: ',''))}<br><span class="unit">${MK[k].unit}</span></th>`).join('')}</tr></thead><tbody>`;
+  S.forEach(s=>{ tot+=`<tr${s.date===st.focus?' style="background:#FFF6CC"':''}><td>${longDate(s.date)} ${s.home===false?'at':'vs'} ${esc(s.oppAbbr||'')}${away(s)?' *':''}</td><td>${s.captured}</td>${gt.map(k=>`<td>${fmt(k,s.all[k])}</td>`).join('')}</tr>`; });
+  tot+='</tbody></table>';
+  return `<h2>Arm load</h2><p class="lede">Force and torque at the shoulder and elbow on each pitch, then added up across every captured pitch in the game. Per-pitch numbers compare games fairly; game totals mostly track how many pitches he threw.</p>
+  ${legend()}
+  <div class="sm">${per.map(k=>`<div class="card"><div class="t">${esc(MK[k].label)}</div><div class="u">${MK[k].unit} per pitch</div>${gameStrip(k,{h:140})}</div>`).join('')}</div>
+  <div class="panel" style="margin-top:16px"><h3>Game totals</h3><div class="tw">${tot}</div><p class="stamp">Game total = per-pitch value × pitches captured, summed over pitch types. Uncaptured pitches are not counted.${S.some(away)?' * different park.':''}</p></div>
+  <div class="panel"><h3>${longDate(f.date)} by pitch type</h3><div class="tw">${pitchTable(f,[...per,...norm,...gt])}</div>
+  <p class="stamp">Body-weight versions divide by his body weight so different-sized arms can be compared.</p></div>`;
+}
+
+function vBody(){
+  const groups=['trunk','pelvis','legs','com'];
+  const pick={
+    trunk:['sep_fc','tr_rot_fc','tr_rot_br','tr_flex_fc','tr_flex_br','tr_flex_max','lean_mer','lean_br','lean_br_p','tr_acc'],
+    pelvis:['pel_rot_fc','pel_rot_mer','pel_rot_br','pel_rot_pct','pel_tilt_br','pel_lean_br','th_rot_fc','th_rot_mer','th_rot_br'],
+    legs:['stride','lk_flex_fc','lk_flex_mer','lk_flex_br','lk_ext_vel','lk_vel_br','lh_flex_fc','lh_flex_br','lh_flex_vel','la_flex_fc','lf_angle','tf_angle','tk_flex_fc'],
+    com:['com_ml_fc','com_ml_mer','com_ml_br','com_v_fc','com_v_mer','com_v_br']
+  };
+  return `<h2>Body</h2><p class="lede">Trunk, pelvis, legs, and how the body travels. Every metric in the file is in All data; these are the ones worth scanning game to game.</p>${legend()}
+  ${groups.map(gk=>`<h3 style="margin-top:18px">${GROUPS[gk]}</h3>${gk==='com'?'<p class="stamp" style="margin-top:0">Units for body drift are as exported and not labeled in the source file. Use these for direction and game-to-game change.</p>':''}
+  <div class="sm">${pick[gk].filter(k=>MK[k]).map(k=>`<div class="card"><div class="t">${esc(MK[k].label)}</div><div class="u">${MK[k].unit}</div>${gameStrip(k)}</div>`).join('')}</div>`).join('')}`;
+}
+
+function vData(){
+  const f=S.find(s=>s.date===st.focus);
+  const q=st.q.trim().toLowerCase();
+  const keys=M.filter(m=>(st.dataGroup==='all'||m.group===st.dataGroup) && (!q || m.label.toLowerCase().includes(q) || m.key.includes(q))).map(m=>m.key);
+  let body;
+  if (st.dataMode==='game'){
+    body=`<table><thead><tr><th>Metric</th>${S.map(s=>`<th>${md(s.date)} ${esc(s.oppAbbr||'')}${away(s)?' *':''}</th>`).join('')}<th>Unit</th></tr></thead><tbody>`;
+    let lastG=null;
+    keys.forEach(k=>{ const m=MK[k];
+      if (m.group!==lastG){ lastG=m.group; body+=`<tr><td class="grp" colspan="${S.length+2}">${GROUPS[m.group]||m.group}</td></tr>`; }
+      body+=`<tr><td>${esc(m.label)}</td>${S.map(s=>{ const anyFix=(s.flags||[]).some(x=>(x.type==='fix'||x.type==='text')&&x.key===k); return `<td${anyFix?' class="fixed" title="Includes a corrected pitch value — see Data log"':''}${s.date===st.focus?' style="font-weight:600"':''}>${fmt(k,s.all[k])}</td>`; }).join('')}<td class="unit">${m.unit}</td></tr>`;
+    });
+    body+='</tbody></table>';
+  } else body=pitchTable(f, keys, true);
+  return `<h2>All data</h2><p class="lede">Every metric from every captured game. Game columns are pitch-weighted averages; game totals are sums. Highlighted cells were corrected from the source file — hover for the reason.</p>
+  <div class="ctl">
+    <span class="seg"><button data-mode="game" aria-pressed="${st.dataMode==='game'}">By game</button><button data-mode="pitch" aria-pressed="${st.dataMode==='pitch'}">By pitch (${md(f.date)})</button></span>
+    <select id="grp" aria-label="Group"><option value="all">All groups</option>${Object.entries(GROUPS).map(([k,v])=>`<option value="${k}"${st.dataGroup===k?' selected':''}>${v}</option>`).join('')}</select>
+    <input id="q" type="search" placeholder="Find a metric" value="${esc(st.q)}" aria-label="Find a metric">
+    <button class="btn" id="csv">Download CSV</button><button class="btn ghost" id="json">Download JSON</button>
+  </div>
+  <div class="panel tw">${keys.length?body:'<div class="empty">No metric matches that search.</div>'}</div>`;
+}
+
+function vLog(){
+  const lab = f => `${PT[f.pitch]||f.pitch}, ${esc(MK[f.key]?.label||f.key)}`;
+  return `<h2>Data log</h2><p class="lede">Every check run on the source file, and every change made to it. Nothing is changed silently.</p>
+  ${S.map(s=>{
+    const fl=s.flags||[];
+    const mix=pitchesOf(s).map(p=>`${p} ${s.pitches[p].n}${s.thrown?`/${s.thrown[p]??0}`:''}`).join(', ');
+    return `<div class="panel"><h3>${longDate(s.date)} ${s.home===false?'at':'vs'} ${esc(s.opp||'unmatched')}</h3>
+    <dl class="kv">
+      <dt>Source</dt><dd>${esc(s.file)} — sheet "${esc(s.sheet.trim())}", dated ${md(s.sheetDate)} on the sheet</dd>
+      <dt>Matched to</dt><dd>${s.verified?`${esc(s.venue)}, ${s.line.ip} IP, ${s.line.pc} pitches${fl.some(x=>x.type==='date')?` <span class="chip" style="background:var(--flag)">date fixed</span>`:''}`:'<b>not verified against a real start</b>'}</dd>
+      <dt>Captured / thrown</dt><dd>${mix}${s.verified?` — ${s.captured} of ${s.line.pc}`:''}</dd>
+      ${s.velo?`<dt>Velocity that night</dt><dd>${pitchesOf(s).map(p=>`${p} ${s.velo[p]!=null?s.velo[p].toFixed(1):'–'}`).join(', ')} mph</dd>`:''}
+    </dl>
+    <ul class="log">
+      ${fl.filter(x=>x.type==='date').map(x=>`<li><b>Date:</b> sheet says ${md(x.sheet)}, but the pitch mix only matches his ${md(x.actual)} start (${esc(x.why)}). Filed under ${md(x.actual)}.</li>`).join('')}
+      ${fl.filter(x=>x.type==='fix').map(x=>`<li><b>Corrected</b> ${lab(x)}: ${x.raw} → ${x.fixed}. ${esc(x.why)}</li>`).join('')}
+      ${fl.filter(x=>x.type==='text').map(x=>`<li><b>Text in a number cell</b> ${lab(x)}: "${esc(x.raw)}" → ${x.fixed??'blank'}. ${esc(x.why)}</li>`).join('')}
+      ${fl.filter(x=>x.type==='dup').map(x=>{ const res=fl.some(y=>y.type==='fix'&&y.key===x.key&&y.pitch===x.pitch); return `<li><b>Repeated row disagrees</b> ${lab(x)}: ${x.primary} vs ${x.repeat} (rows ${x.rows.join(' and ')}). ${res?'Resolved by the correction above.':`Using ${x.primary}.`}</li>`; }).join('')}
+      ${fl.filter(x=>x.type==='total').map(x=>`<li><b>Game total off</b> ${lab(x)}: sheet ${x.sheet}, per-pitch × count = ${x.computed}. Using ${x.computed}.</li>`).join('')}
+      ${fl.filter(x=>x.type==='summary').map(x=>`<li><b>Session average disagrees</b> ${esc(MK[x.key].label)}: sheet ${x.sheet}, pitch-weighted ${x.computed}.</li>`).join('')}
+      ${fl.filter(x=>x.type==='kept').map(x=>`<li><b>Checked and kept</b> ${lab(x)}: ${x.raw}. ${esc(x.why)}</li>`).join('')}
+      ${fl.filter(x=>x.type==='suspect').map(x=>`<li><b>Needs a look</b> ${lab(x)}: ${x.value} (${esc(x.why)}). Not changed.</li>`).join('')}
+      ${fl.length===0?'<li>Clean. No issues found.</li>':''}
+    </ul></div>`;}).join('')}
+  <div class="panel"><h3>Reading the numbers</h3><ul class="log">
+    <li>Values are averages per pitch type from the capture system. Game averages weight each pitch type by how many were captured.</li>
+    <li>Release side, height, and extension are in inches in the capture system's own frame. They line up with each other within this file; they are not the same zero as ball-tracking release numbers.</li>
+    <li>Angles keep the sign convention of the export (many read negative by design).</li>
+    <li>Checks run on every build: template layout row by row, pitch columns matched by name, repeated rows compared, game totals recomputed, session averages rebuilt, lone sign flips and far-off values flagged, and each sheet matched to a real start by pitch mix.</li>
+    ${S.some(away)?`<li>Games at a park other than ${esc(homePark)} are marked. Different camera installs can shift some angles, so compare them with care.</li>`:''}
+  </ul></div>`;
+}
+
+function vAnalytics(){
+  return `<div class="pend"><h2>Analytics report</h2><p class="lede" style="margin:0 auto">This half of ${esc(P.name)}'s page is next: pitch grades, shapes, and results by start, lined up with the same game dates as the biomechanics above so the two can be read side by side.</p></div>`;
+}
+
+/* ---------- exports ---------- */
+function download(name, text, type){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+function csv(){
+  const rows=[['player','date','opponent','venue','pitch_type','pitches','group','metric_key','metric','unit','value','corrected_from']];
+  S.forEach(s=>{
+    pitchesOf(s).forEach(p=>M.forEach(m=>{ const v=s.pitches[p].v[m.key]; const fx=fixedCell(s,m.key,p);
+      rows.push([P.name,s.date,s.oppAbbr||'',s.venue||'',p,s.pitches[p].n,m.group,m.key,m.label,m.unit,v??'',fx?fx.raw:'']); }));
+    M.forEach(m=>rows.push([P.name,s.date,s.oppAbbr||'',s.venue||'','GAME',s.captured,m.group,m.key,m.label,m.unit,s.all[m.key]??'','']));
+  });
+  download(P.name.toLowerCase().replace(/\s+/g,'-')+'-biomech.csv', rows.map(r=>r.map(c=>/[",\n]/.test(String(c))?`"${String(c).replace(/"/g,'""')}"`:c).join(',')).join('\n'),'text/csv');
+}
+
+/* ---------- render ---------- */
+function render(){
+  document.querySelectorAll('.switch button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.report===st.report));
+  const app=document.getElementById('app');
+  if (st.report==='ana'){ app.innerHTML=vAnalytics(); return; }
+  const V={summary:vSummary,sequence:vSequence,pitches:vPitches,load:vLoad,body:vBody,data:vData,log:vLog}[st.tab];
+  app.innerHTML = vRail()+vTabs()+`<section role="tabpanel">${V()}</section>`;
+  app.querySelectorAll('.game').forEach(b=>b.onclick=()=>{st.focus=b.dataset.g;render();});
+  app.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{st.tab=b.dataset.tab;render();});
+  app.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{st.dataMode=b.dataset.mode;render();});
+  const g=app.querySelector('#grp'); if(g) g.onchange=()=>{st.dataGroup=g.value;render();};
+  const q=app.querySelector('#q'); if(q) q.oninput=()=>{st.q=q.value;const pos=q.selectionStart;render();const n=document.getElementById('q');n.focus();n.setSelectionRange(pos,pos);};
+  const c=app.querySelector('#csv'); if(c) c.onclick=csv;
+  const j=app.querySelector('#json'); if(j) j.onclick=()=>download(P.name.toLowerCase().replace(/\s+/g,'-')+'-biomech.json',JSON.stringify(D,null,1),'application/json');
+}
+render();
+}
+</script>
+</body>
+</html>
