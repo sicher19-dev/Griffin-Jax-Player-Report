@@ -1,0 +1,68 @@
+{
+  "griffin-jax": {
+    "2026-09-02": [
+      {
+        "pitch": "CH",
+        "key": "mprv",
+        "raw": 258,
+        "fixed": 528,
+        "why": "Transposed digits. The sheet's own session pelvis average (540) only works if the changeup value is 528; every other pitch that night was 529-553."
+      },
+      {
+        "pitch": "CU",
+        "key": "tr_flex_max",
+        "raw": 81.9,
+        "fixed": -81.9,
+        "why": "Sign flip. Every other pitch in all four games reads -68.6 to -87.2."
+      }
+    ],
+    "2026-07-28": [
+      {
+        "pitch": "SW",
+        "key": "com_v_fc",
+        "raw": 27.7,
+        "fixed": -27.7,
+        "why": "Sign flip. Every other pitch type in all four games reads -24.8 to -28.4."
+      }
+    ],
+    "2026-08-02": [
+      {
+        "pitch": "CU",
+        "key": "pel_rot_mer",
+        "raw": 0.8,
+        "fixed": 8.8,
+        "why": "The repeated Hip Loading row on the same sheet reads 8.8; every other pitch that night was 8.0-10.5."
+      },
+      {
+        "pitch": "CH",
+        "key": "tr_flex_br",
+        "raw": 43.3,
+        "fixed": -43.3,
+        "why": "Sign flip. Every other pitch in all four games reads -39.9 to -47.8."
+      },
+      {
+        "pitch": "CH",
+        "key": "lh_abd_fc",
+        "raw": 26.3,
+        "fixed": -26.3,
+        "why": "Sign flip. Every other pitch in all four games reads -25.0 to -28.0."
+      }
+    ],
+    "2026-07-17": [
+      {
+        "pitch": "SI",
+        "key": "lk_ext_vel",
+        "raw": 600,
+        "fixed": -600,
+        "why": "Sign flip. Every other pitch in all four games reads -493 to -612."
+      },
+      {
+        "pitch": "CH",
+        "key": "com_v_br",
+        "raw": -1.7,
+        "keep": true,
+        "why": "Reviewed and kept. Vertical body speed passes through zero near release, and that night's values were all small (0.7 to 3.2)."
+      }
+    ]
+  }
+}
