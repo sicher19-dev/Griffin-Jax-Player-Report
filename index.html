@@ -10,36 +10,38 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --navy:#092C5C; --navy-2:#0F3B75; --sky:#8FBCE6; --sky-soft:#DCEAF7;
-  --gold:#F5D130; --gold-soft:#FFF6CC;
-  --paper:#EDF2F8; --panel:#FFFFFF; --ink:#15243A; --muted:#5B6B82; --line:#D3DDE9;
-  --flag:#C7372F;
-  --FF:#D22D49; --SI:#F08A00; --CH:#1A9E36; --SW:#B8901C; --CU:#0098B8; --SL:#7B5CC4; --FC:#8C4A2F; --FS:#3C7D8C;
+  color-scheme:dark;
+  --bg:#0D131C; --panel:#141C28; --panel-2:#1A2432; --raise:#202B3B;
+  --ink:#D5DDE8; --ink-soft:#B3BFCE; --muted:#7F8DA1; --line:#243042; --grid:#1F2A3A;
+  --head:#0A1019; --accent:#8FB6DA; --accent-strong:#B7D2EC;
+  --gold:#C9AB52; --gold-soft:rgba(201,171,82,.10); --gold-line:rgba(201,171,82,.45);
+  --flag:#D46A5E;
+  --FF:#C8596B; --SI:#CF8C4E; --CH:#5BA66F; --SW:#BFA256; --CU:#4CA3B8; --SL:#8E7BC4; --FC:#A0735E; --FS:#5E97A3;
   --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
   --body:"Barlow",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
 button{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 
 /* header */
-.top{background:var(--navy);color:#fff}
+.top{background:var(--head);color:var(--ink);border-bottom:1px solid var(--line)}
 .top-in{max-width:1180px;margin:0 auto;padding:18px 20px 0}
-.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.02em;color:var(--sky)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.02em;color:var(--muted)}
 .brand i{display:inline-block;width:22px;height:22px;border:2px solid var(--gold);border-radius:50%;position:relative}
 .brand i:after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--gold)}
-.brand .int{margin-left:auto;font-family:var(--body);font-size:12px;color:#fff;background:rgba(255,255,255,.1);padding:2px 8px;border-radius:3px}
+.brand .int{margin-left:auto;font-family:var(--body);font-size:12px;color:var(--ink-soft);background:var(--raise);padding:2px 8px;border-radius:3px}
 .who{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px 28px;margin:14px 0 16px}
 .who h1{font-family:var(--display);font-weight:800;font-size:clamp(44px,8vw,76px);line-height:.88;margin:0;text-transform:uppercase;letter-spacing:-.01em}
-.who h1 span{display:block;font-size:.42em;font-weight:600;color:var(--sky);letter-spacing:0;text-transform:none;margin-bottom:4px}
+.who h1 span{display:block;font-size:.42em;font-weight:600;color:var(--accent);letter-spacing:0;text-transform:none;margin-bottom:4px}
 .facts{display:flex;gap:22px;flex-wrap:wrap;padding-bottom:6px}
 .facts div{font-family:var(--display);font-size:30px;font-weight:700;line-height:1}
-.facts small{display:block;font-family:var(--body);font-size:12px;font-weight:500;color:var(--sky);margin-top:3px}
+.facts small{display:block;font-family:var(--body);font-size:12px;font-weight:500;color:var(--muted);margin-top:3px}
 .switch{display:flex;gap:2px}
-.switch button{background:none;border:0;padding:10px 16px 12px;font-family:var(--display);font-size:19px;font-weight:600;color:var(--sky);cursor:pointer;border-radius:6px 6px 0 0}
-.switch button[aria-pressed=true]{background:var(--paper);color:var(--navy)}
+.switch button{background:none;border:0;padding:10px 16px 12px;font-family:var(--display);font-size:19px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:6px 6px 0 0}
+.switch button[aria-pressed=true]{background:var(--bg);color:var(--ink);box-shadow:inset 0 2px 0 var(--gold)}
 .switch button .soon{font-family:var(--body);font-size:11px;font-weight:500;margin-left:6px;opacity:.8}
 
 main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}
@@ -47,21 +49,21 @@ main{max-width:1180px;margin:0 auto;padding:18px 20px 60px}
 /* game rail */
 .rail{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
 .game{flex:0 0 auto;min-width:150px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;position:relative}
-.game[aria-pressed=true]{border-color:var(--navy);box-shadow:inset 0 -4px 0 var(--gold)}
+.game[aria-pressed=true]{border-color:var(--gold-line);background:var(--panel-2);box-shadow:inset 0 -3px 0 var(--gold)}
 .game b{display:block;font-family:var(--display);font-size:22px;line-height:1.05}
 .game .opp{font-weight:600}
 .game .ln{font-size:12px;color:var(--muted)}
 .game .cap{font-size:12px;margin-top:4px}
 .game .park{position:absolute;top:8px;right:10px;font-size:11px;color:var(--flag);font-weight:600}
-.game.all b{color:var(--navy)}
+
 
 /* tabs */
 .tabs{display:flex;gap:4px;margin:18px 0 14px;border-bottom:2px solid var(--line);overflow-x:auto}
 .tabs button{background:none;border:0;padding:8px 12px;font-family:var(--display);font-size:18px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px}
-.tabs button[aria-selected=true]{color:var(--navy);border-bottom-color:var(--navy)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--gold)}
 
-h2{font-family:var(--display);font-size:30px;font-weight:700;line-height:1.05;margin:6px 0 4px;color:var(--navy)}
-h3{font-family:var(--display);font-size:21px;font-weight:600;margin:0 0 6px;color:var(--navy)}
+h2{font-family:var(--display);font-size:30px;font-weight:700;line-height:1.05;margin:6px 0 4px;color:var(--ink)}
+h3{font-family:var(--display);font-size:21px;font-weight:600;margin:0 0 6px;color:var(--accent-strong)}
 .lede{color:var(--muted);max-width:72ch;margin:0 0 16px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
@@ -70,12 +72,12 @@ h3{font-family:var(--display);font-size:21px;font-weight:600;margin:0 0 6px;colo
 
 /* notes */
 .col h3{display:flex;align-items:center;gap:8px}
-.col h3:before{content:"";width:12px;height:12px;border-radius:2px;background:var(--navy)}
-.col.moved h3:before{background:var(--gold);outline:1px solid #C9A800}
-.col.watch h3:before{background:#fff;border:2px solid var(--navy)}
+.col h3:before{content:"";width:10px;height:10px;border-radius:2px;background:var(--accent)}
+.col.moved h3:before{background:var(--gold)}
+.col.watch h3:before{background:transparent;border:2px solid var(--accent)}
 .note{padding:10px 0;border-top:1px solid var(--line)}
 .note b{display:block;font-weight:600;line-height:1.3;margin-bottom:2px}
-.note p{margin:0;color:#34455D;font-size:14px}
+.note p{margin:0;color:var(--ink-soft);font-size:14px}
 .stamp{font-size:12px;color:var(--muted)}
 
 /* movers */
@@ -83,7 +85,7 @@ h3{font-family:var(--display);font-size:21px;font-weight:600;margin:0 0 6px;colo
 .mover .nm{font-weight:600;line-height:1.25}
 .mover .nm small{display:block;font-weight:400;color:var(--muted);font-size:12px}
 .mover .ag{font-size:12px;color:var(--muted);text-align:right}
-.mover .ag b{display:block;font-family:var(--display);font-size:20px;color:var(--ink)}
+.mover .ag b{display:block;font-family:var(--display);font-size:20px;color:var(--gold)}
 .empty{color:var(--muted);font-style:italic;padding:8px 0}
 
 /* tables */
@@ -92,24 +94,24 @@ table{border-collapse:collapse;width:100%;font-size:14px}
 th,td{padding:6px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
 th:first-child,td:first-child{text-align:left;white-space:normal;min-width:190px}
 thead th{font-weight:600;color:var(--muted);font-size:12px;position:sticky;top:0;background:var(--panel);border-bottom:2px solid var(--line)}
-tbody tr:hover td{background:#F5F8FC}
-td.grp{background:var(--sky-soft)!important;font-family:var(--display);font-weight:600;font-size:16px;color:var(--navy)}
+tbody tr:hover td{background:var(--panel-2)}
+td.grp{background:var(--raise)!important;font-family:var(--display);font-weight:600;font-size:16px;color:var(--accent-strong)}
 .unit{color:var(--muted);font-size:12px}
-.fixed{background:var(--gold-soft);box-shadow:inset 3px 0 0 var(--gold);cursor:help}
+.fixed{background:var(--gold-soft);box-shadow:inset 3px 0 0 var(--gold);color:var(--gold);cursor:help}
 .chip{display:inline-block;font-size:12px;font-weight:600;padding:1px 7px;border-radius:3px;color:#fff}
 .pt{display:inline-flex;align-items:center;gap:5px;font-weight:600}
 .pt:before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c)}
-.avgcol{background:#F4F7FB}
+.avgcol{background:var(--panel-2)}
 
 /* controls */
 .ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
-.ctl select,.ctl input{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;min-height:36px}
+.ctl select,.ctl input{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);color:var(--ink);min-height:36px}
 .ctl input{min-width:200px}
-.btn{background:var(--navy);color:#fff;border:0;border-radius:6px;padding:7px 14px;cursor:pointer;font-weight:600;min-height:36px}
-.btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+.btn{background:var(--accent);color:var(--bg);border:0;border-radius:6px;padding:7px 14px;cursor:pointer;font-weight:600;min-height:36px}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
-.seg button{background:#fff;border:0;padding:6px 12px;cursor:pointer;min-height:34px}
-.seg button[aria-pressed=true]{background:var(--navy);color:#fff}
+.seg button{background:var(--panel-2);color:var(--ink-soft);border:0;padding:6px 12px;cursor:pointer;min-height:34px}
+.seg button[aria-pressed=true]{background:var(--raise);color:var(--ink);box-shadow:inset 0 -2px 0 var(--gold)}
 
 /* small multiples */
 .sm{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
@@ -118,12 +120,12 @@ td.grp{background:var(--sky-soft)!important;font-family:var(--display);font-weig
 .card .u{font-size:12px;color:var(--muted)}
 svg text{font-family:var(--body)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin:4px 0 10px}
-.legend .hol:before{background:#fff;border:2px solid var(--muted)}
+.legend .hol:before{background:transparent;border:2px solid var(--muted)}
 .legend span.pt.hol{font-weight:500;color:var(--muted)}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px}
 .kv dt{color:var(--muted)}
 .kv dd{margin:0}
-.pend{border:2px dashed var(--sky);border-radius:10px;padding:28px;text-align:center;background:#fff}
+.pend{border:1px dashed var(--line);border-radius:10px;padding:28px;text-align:center;background:var(--panel)}
 .pend h2{margin-bottom:8px}
 .log li{margin:4px 0}
 @media (max-width:640px){
@@ -135,7 +137,7 @@ svg text{font-family:var(--body)}
 }
 footer{max-width:1180px;margin:0 auto;padding:0 20px 30px;color:var(--muted);font-size:12px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-@media print{.switch,.tabs,.ctl{display:none}.top{background:#fff;color:var(--ink)}}
+@media print{.switch,.tabs,.ctl{display:none}.top{background:#fff;color:#000}}
 </style>
 </head>
 <body>
@@ -284,24 +286,24 @@ function gameStrip(k, opts={}){
   const [lo,hi]=nice(Math.min(...vals),Math.max(...vals));
   const y=scale(lo,hi,H-B,T), step=(W-L-R)/S.length;
   let g=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(MK[k].label)} by game">`;
-  [lo+(hi-lo)*0.1, (lo+hi)/2, hi-(hi-lo)*0.1].forEach(t=>{ g+=`<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="#E3EAF2"/><text x="${L-4}" y="${y(t)+4}" font-size="10" text-anchor="end" fill="#5B6B82">${dec(MK[k].unit,t)}</text>`; });
+  [lo+(hi-lo)*0.1, (lo+hi)/2, hi-(hi-lo)*0.1].forEach(t=>{ g+=`<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)"/><text x="${L-4}" y="${y(t)+4}" font-size="10" text-anchor="end" fill="var(--muted)">${dec(MK[k].unit,t)}</text>`; });
   S.forEach((s,i)=>{
     const cx=L+step*(i+.5), foc=s.date===st.focus;
-    if (foc) g+=`<rect x="${cx-step/2+2}" y="${T-6}" width="${step-4}" height="${H-B-T+10}" fill="#FFF6CC" rx="4"/>`;
-    const a=s.all[k]; if(a!=null) g+=`<line x1="${cx-step*.32}" x2="${cx+step*.32}" y1="${y(a)}" y2="${y(a)}" stroke="#092C5C" stroke-width="2.5"/>`;
+    if (foc) g+=`<rect x="${cx-step/2+2}" y="${T-6}" width="${step-4}" height="${H-B-T+10}" fill="var(--gold-soft)" rx="4"/>`;
+    const a=s.all[k]; if(a!=null) g+=`<line x1="${cx-step*.32}" x2="${cx+step*.32}" y1="${y(a)}" y2="${y(a)}" stroke="var(--ink)" stroke-width="2.5"/>`;
     pitchesOf(s).forEach((p,j,arr)=>{ const v=s.pitches[p].v[k]; if(v==null) return;
       const x=cx+(j-(arr.length-1)/2)*Math.min(7,step/7);
-      g+= away(s) ? `<circle cx="${x}" cy="${y(v)}" r="3.6" fill="#fff" stroke="${pc(p)}" stroke-width="1.8"><title>${md(s.date)} ${PT[p]}: ${fmt(k,v)}</title></circle>`
+      g+= away(s) ? `<circle cx="${x}" cy="${y(v)}" r="3.6" fill="var(--panel)" stroke="${pc(p)}" stroke-width="1.8"><title>${md(s.date)} ${PT[p]}: ${fmt(k,v)}</title></circle>`
                   : `<circle cx="${x}" cy="${y(v)}" r="3.8" fill="${pc(p)}"><title>${md(s.date)} ${PT[p]}: ${fmt(k,v)}</title></circle>`;
     });
-    g+=`<text x="${cx}" y="${H-7}" font-size="11" text-anchor="middle" fill="${foc?'#092C5C':'#5B6B82'}" font-weight="${foc?600:400}">${md(s.date)}</text>`;
+    g+=`<text x="${cx}" y="${H-7}" font-size="11" text-anchor="middle" fill="${foc?'var(--gold)':'var(--muted)'}" font-weight="${foc?600:400}">${md(s.date)}</text>`;
   });
   return g+'</svg>';
 }
 function legend(extra=true){
   return `<div class="legend">${allPitches.map(p=>`<span class="pt" style="--c:${pc(p)}">${p} ${PT[p]}</span>`).join('')}
-  <span><svg width="22" height="8"><line x1="1" x2="21" y1="4" y2="4" stroke="#092C5C" stroke-width="2.5"/></svg> game average</span>
-  ${extra && S.some(away)?`<span class="pt hol" style="--c:#fff">open dot = not ${esc(homePark||'home park')}</span>`:''}</div>`;
+  <span><svg width="22" height="8"><line x1="1" x2="21" y1="4" y2="4" stroke="var(--ink)" stroke-width="2.5"/></svg> game average</span>
+  ${extra && S.some(away)?`<span class="pt hol" style="--c:transparent">open dot = not ${esc(homePark||'home park')}</span>`:''}</div>`;
 }
 
 /* ---------- views ---------- */
@@ -339,9 +341,9 @@ function vSummary(){
 function moverBar(o){
   const W=220,H=26, lo=Math.min(o.fv,o.bv), hi=Math.max(o.fv,o.bv), pad=(hi-lo)*0.6||1;
   const x=scale(lo-pad,hi+pad,6,W-6);
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" aria-hidden="true"><line x1="6" x2="${W-6}" y1="13" y2="13" stroke="#E3EAF2" stroke-width="2"/>
-  <line x1="${x(o.bv)}" x2="${x(o.fv)}" y1="13" y2="13" stroke="#F5D130" stroke-width="6"/>
-  <circle cx="${x(o.bv)}" cy="13" r="5" fill="#fff" stroke="#092C5C" stroke-width="2"/><circle cx="${x(o.fv)}" cy="13" r="6" fill="#092C5C"/></svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" aria-hidden="true"><line x1="6" x2="${W-6}" y1="13" y2="13" stroke="var(--grid)" stroke-width="2"/>
+  <line x1="${x(o.bv)}" x2="${x(o.fv)}" y1="13" y2="13" stroke="var(--gold)" stroke-width="4" opacity=".8"/>
+  <circle cx="${x(o.bv)}" cy="13" r="5" fill="var(--panel)" stroke="var(--ink)" stroke-width="2"/><circle cx="${x(o.fv)}" cy="13" r="6" fill="var(--ink)"/></svg>`;
 }
 
 function vSequence(){
@@ -352,21 +354,21 @@ function vSequence(){
   const W=1000, rowH=78, T=40, H=T+rowH*segs.length+20, L=110, R=30;
   const minT=Math.min(-150,...segs.map(x=>x.tFc))-5;
   const x=scale(minT,15,L,W-R);
-  const col={Pelvis:'#8FBCE6',Trunk:'#4F86C0',Elbow:'#0F3B75',Shoulder:'#092C5C',Hand:'#F5D130'};
+  const col={Pelvis:'#3E5775',Trunk:'#56789E',Elbow:'#7A9FC6',Shoulder:'#A9C6E3',Hand:'var(--gold)'};
   let g=`<svg class="seqsvg" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Kinematic sequence timing by game">`;
-  for(let t=-140;t<=10;t+=20){ g+=`<line x1="${x(t)}" x2="${x(t)}" y1="${T-12}" y2="${H-14}" stroke="${t===0?'#092C5C':'#E3EAF2'}" stroke-width="${t===0?2:1}"/><text x="${x(t)}" y="${T-18}" font-size="12" text-anchor="middle" fill="#5B6B82">${t===0?'release':t+' ms'}</text>`; }
+  for(let t=-140;t<=10;t+=20){ g+=`<line x1="${x(t)}" x2="${x(t)}" y1="${T-12}" y2="${H-14}" stroke="${t===0?'var(--gold)':'var(--grid)'}" stroke-width="${t===0?2:1}"/><text x="${x(t)}" y="${T-18}" font-size="12" text-anchor="middle" fill="var(--muted)">${t===0?'release':t+' ms'}</text>`; }
   segs.forEach((o,i)=>{
     const cy=T+rowH*i+rowH/2, foc=o.s.date===st.focus;
-    if (foc) g+=`<rect x="0" y="${cy-rowH/2+4}" width="${W}" height="${rowH-8}" fill="#FFF6CC" rx="6"/>`;
-    g+=`<text x="8" y="${cy-4}" font-size="16" font-weight="600" fill="#092C5C">${md(o.s.date)} ${esc(o.s.oppAbbr||'')}</text><text x="8" y="${cy+14}" font-size="12" fill="#5B6B82">${Math.round(-o.tFc)} ms FS to release${away(o.s)?' *':''}</text>`;
-    g+=`<line x1="${x(o.tFc)}" x2="${x(o.pts[4][1])}" y1="${cy}" y2="${cy}" stroke="#C9D6E6" stroke-width="3"/>`;
-    g+=`<g><rect x="${x(o.tFc)-2}" y="${cy-14}" width="4" height="28" fill="#15243A"/><text x="${x(o.tFc)}" y="${cy+30}" font-size="11" text-anchor="middle" fill="#15243A">foot strike</text></g>`;
+    if (foc) g+=`<rect x="0" y="${cy-rowH/2+4}" width="${W}" height="${rowH-8}" fill="var(--gold-soft)" rx="6"/>`;
+    g+=`<text x="8" y="${cy-4}" font-size="16" font-weight="600" fill="var(--ink)">${md(o.s.date)} ${esc(o.s.oppAbbr||'')}</text><text x="8" y="${cy+14}" font-size="12" fill="var(--muted)">${Math.round(-o.tFc)} ms FS to release${away(o.s)?' *':''}</text>`;
+    g+=`<line x1="${x(o.tFc)}" x2="${x(o.pts[4][1])}" y1="${cy}" y2="${cy}" stroke="var(--line)" stroke-width="3"/>`;
+    g+=`<g><rect x="${x(o.tFc)-2}" y="${cy-14}" width="4" height="28" fill="var(--ink)"/><text x="${x(o.tFc)}" y="${cy+30}" font-size="11" text-anchor="middle" fill="var(--ink)">foot strike</text></g>`;
     o.pts.forEach(([nm,t,v],j)=>{
       const r=4+Math.sqrt(v)/9;
-      g+=`<circle cx="${x(t)}" cy="${cy}" r="${r}" fill="${col[nm]}" stroke="#fff" stroke-width="1.5"><title>${nm} peak ${Math.round(v).toLocaleString()}°/s at ${t} ms</title></circle>`;
+      g+=`<circle cx="${x(t)}" cy="${cy}" r="${r}" fill="${col[nm]}" stroke="var(--panel)" stroke-width="1.5"><title>${nm} peak ${Math.round(v).toLocaleString()}°/s at ${t} ms</title></circle>`;
       const anc = nm==='Shoulder'?'end':nm==='Hand'?'start':'middle', dx = nm==='Shoulder'?-3:nm==='Hand'?3:0;
-      g+=`<text x="${x(t)+dx}" y="${cy-r-5}" font-size="11" text-anchor="${anc}" fill="#15243A" font-weight="600">${Math.round(v).toLocaleString()}</text>`;
-      g+=`<text x="${x(t)+dx}" y="${cy+r+13}" font-size="10" text-anchor="${anc}" fill="#5B6B82">${nm}</text>`;
+      g+=`<text x="${x(t)+dx}" y="${cy-r-5}" font-size="11" text-anchor="${anc}" fill="var(--ink)" font-weight="600">${Math.round(v).toLocaleString()}</text>`;
+      g+=`<text x="${x(t)+dx}" y="${cy+r+13}" font-size="10" text-anchor="${anc}" fill="var(--muted)">${nm}</text>`;
     });
   });
   g+='</svg>';
@@ -401,11 +403,11 @@ function vPitches(){
   const [y0,y1]=nice(Math.min(...pts.map(q=>q.y)),Math.max(...pts.map(q=>q.y)));
   const X=scale(x0,x1,L,W-R), Y=scale(y0,y1,H-B,T);
   let g=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Release window by pitch type">`;
-  for(let t=Math.ceil(x0);t<=x1;t++) g+=`<line x1="${X(t)}" x2="${X(t)}" y1="${T}" y2="${H-B}" stroke="#EEF2F7"/><text x="${X(t)}" y="${H-B+16}" font-size="11" text-anchor="middle" fill="#5B6B82">${t}</text>`;
-  for(let t=Math.ceil(y0);t<=y1;t++) g+=`<line x1="${L}" x2="${W-R}" y1="${Y(t)}" y2="${Y(t)}" stroke="#EEF2F7"/><text x="${L-6}" y="${Y(t)+4}" font-size="11" text-anchor="end" fill="#5B6B82">${t}</text>`;
-  g+=`<text x="${(L+W-R)/2}" y="${H-6}" font-size="12" text-anchor="middle" fill="#15243A">Release side (in) — wider to the right</text><text transform="translate(12 ${(T+H-B)/2}) rotate(-90)" font-size="12" text-anchor="middle" fill="#15243A">Release height (in)</text>`;
+  for(let t=Math.ceil(x0);t<=x1;t++) g+=`<line x1="${X(t)}" x2="${X(t)}" y1="${T}" y2="${H-B}" stroke="var(--grid)"/><text x="${X(t)}" y="${H-B+16}" font-size="11" text-anchor="middle" fill="var(--muted)">${t}</text>`;
+  for(let t=Math.ceil(y0);t<=y1;t++) g+=`<line x1="${L}" x2="${W-R}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--grid)"/><text x="${L-6}" y="${Y(t)+4}" font-size="11" text-anchor="end" fill="var(--muted)">${t}</text>`;
+  g+=`<text x="${(L+W-R)/2}" y="${H-6}" font-size="12" text-anchor="middle" fill="var(--ink)">Release side (in) — wider to the right</text><text transform="translate(12 ${(T+H-B)/2}) rotate(-90)" font-size="12" text-anchor="middle" fill="var(--ink)">Release height (in)</text>`;
   pts.filter(q=>q.s!==f).forEach(q=>{ g+=`<circle cx="${X(q.x)}" cy="${Y(q.y)}" r="5" fill="${pc(q.p)}" opacity=".22"><title>${md(q.s.date)} ${PT[q.p]}</title></circle>`; });
-  pts.filter(q=>q.s===f).forEach(q=>{ g+=`<circle cx="${X(q.x)}" cy="${Y(q.y)}" r="9" fill="${pc(q.p)}" stroke="#fff" stroke-width="2"><title>${PT[q.p]}: side ${q.x}, height ${q.y}, slot ${q.a}°</title></circle><text x="${X(q.x)+12}" y="${Y(q.y)+4}" font-size="12" font-weight="600" fill="#15243A">${q.p} ${q.a!=null?q.a.toFixed(1)+'°':''}</text>`; });
+  pts.filter(q=>q.s===f).forEach(q=>{ g+=`<circle cx="${X(q.x)}" cy="${Y(q.y)}" r="9" fill="${pc(q.p)}" stroke="var(--panel)" stroke-width="2"><title>${PT[q.p]}: side ${q.x}, height ${q.y}, slot ${q.a}°</title></circle><text x="${X(q.x)+12}" y="${Y(q.y)+4}" font-size="12" font-weight="600" fill="var(--ink)">${q.p} ${q.a!=null?q.a.toFixed(1)+'°':''}</text>`; });
   g+='</svg>';
   const rp=repeats();
   const keys=['arm_slot','rel_height','rel_side','rel_ext','stride','sh_rot_mer','abd_br','elb_flex_mer','pro_mer','pro_br','meev','msrv','mhv','varus','sh_force','tr_flex_br','lean_br','lk_flex_br'];
@@ -426,7 +428,7 @@ function vLoad(){
   const norm=['varus_n','sh_force_n','sh_torque_n'];
   const gt=['gt_varus','gt_sh_force','gt_sh_torque'];
   let tot=`<table><thead><tr><th>Game</th><th>Pitches captured</th>${gt.map(k=>`<th>${esc(MK[k].label.replace('Game total: peak ','Peak ').replace('Game total: ',''))}<br><span class="unit">${MK[k].unit}</span></th>`).join('')}</tr></thead><tbody>`;
-  S.forEach(s=>{ tot+=`<tr${s.date===st.focus?' style="background:#FFF6CC"':''}><td>${longDate(s.date)} ${s.home===false?'at':'vs'} ${esc(s.oppAbbr||'')}${away(s)?' *':''}</td><td>${s.captured}</td>${gt.map(k=>`<td>${fmt(k,s.all[k])}</td>`).join('')}</tr>`; });
+  S.forEach(s=>{ tot+=`<tr${s.date===st.focus?' style="background:var(--gold-soft)"':''}><td>${longDate(s.date)} ${s.home===false?'at':'vs'} ${esc(s.oppAbbr||'')}${away(s)?' *':''}</td><td>${s.captured}</td>${gt.map(k=>`<td>${fmt(k,s.all[k])}</td>`).join('')}</tr>`; });
   tot+='</tbody></table>';
   return `<h2>Arm load</h2><p class="lede">Force and torque at the shoulder and elbow on each pitch, then added up across every captured pitch in the game. Per-pitch numbers compare games fairly; game totals mostly track how many pitches he threw.</p>
   ${legend()}
