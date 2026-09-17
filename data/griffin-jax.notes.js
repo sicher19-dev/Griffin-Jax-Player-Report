@@ -15,7 +15,7 @@ window.NB_NOTES = {
     {h: "Pelvis slower and later off the IL",
      p: "Peak pelvis speed 540°/s on 9/2 against 593, 593 and 599 in the three Trop games before, and every one of the five pitch types was lower (528 to 553, against 587 to 609). It also peaked later after foot strike: 21 ms against 16, 16 and 17."},
     {h: "Back hip turned the other way at foot strike",
-     p: "Back hip rotation at foot strike read +1.4° to +3.2° on all five pitch types on 9/2. In the four games before, 19 of 20 pitch-type readings were negative (-0.3° to -3.6°; the lone exception was the 7/11 sweeper at +0.7°). Pelvis was also less open at release (10.2° against 12.5 to 14.0)."},
+     p: "Back hip rotation at foot strike read +1.4° to +3.2° on all five pitch types on 9/2. In the four games before, 19 of 20 pitch-type readings were negative (-0.3° to -3.6°; the lone exception was the 7/11 sweeper at +0.7°). Pelvis was also less open at release (10.2° against 12.5 to 14.0). The only other capture where it read positive was the April bullpen block (+2.3°, four of five pitch types)."},
     {h: "More trunk doing the work",
      p: "About 4° more hip-shoulder separation at foot strike (-72.9° against -68.7 to -69.1; every 9/2 pitch type past -71.9°, every earlier one inside -70.7°), more forward tilt at release (-47.4° against -43.1 to -43.4), more glove-side lean at layback (-35.9° against -31.4 to -33.1), and about 2° more layback (192.2°)."},
     {h: "Changeup elbow load jumped",
@@ -28,6 +28,8 @@ window.NB_NOTES = {
      p: "9/2 is one game and 63 pitches. If pelvis speed and the back-hip position stay where they were on 9/2, the trunk and arm are covering for the lower half. The next captured game answers it."},
     {h: "Changeup slot and load",
      p: "The changeup comes out 1.7° to 2.4° higher and 0.5 to 1.3 in tighter than the four-seam in every game. On 9/2 it also carried fastball-level elbow load. Worth reading next to the changeup height and side-to-side run in the Analytics tab."},
+    {h: "Use the April bullpen block as a reference, not a trend point",
+     p: "The 3/30 to 4/12 bullpen block (108 pitches) has the fastest hand (6,602°/s) and pelvis (605°/s) numbers in the file, a longer stride (92.9% of height against 90.8 to 91.6 in games) and more extension (75.4 in against 73.4 to 74.5). Several values sit closer to the Fenway game than the Trop games (35 ms pelvis-to-trunk gap, 93° arm abduction at release), which points to a different capture setup. Good for the early-season picture; don't read it as a game."},
     {h: "Keep Fenway in its own lane",
      p: "7/17 was captured at Fenway. Several values sit well outside the four Trop games (pelvis open 20.8° at release against 10.2 to 14.0, arm abduction 95° at release against 87 to 90, trunk lean vs pelvis -3° against -20° to -28°). Treat it as its own baseline, not a trend point."}
   ]
