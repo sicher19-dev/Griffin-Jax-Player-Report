@@ -107,6 +107,7 @@ td.grp{background:var(--raise)!important;font-family:var(--display);font-weight:
 .ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
 .ctl select,.ctl input{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);color:var(--ink);min-height:36px}
 .ctl input{min-width:200px}
+.ctl input[type=checkbox]{min-width:0;min-height:0;width:16px;height:16px;vertical-align:-3px;margin-right:6px;accent-color:var(--gold)}
 .btn{background:var(--accent);color:var(--bg);border:0;border-radius:6px;padding:7px 14px;cursor:pointer;font-weight:600;min-height:36px}
 .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
@@ -150,7 +151,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 20px 30px;color:var(--muted);fon
     </div>
     <nav class="switch" aria-label="Report">
       <button data-report="bio" aria-pressed="true">Biomechanics</button>
-      <button data-report="ana" aria-pressed="false">Analytics<span class="soon">next</span></button>
+      <button data-report="ana" aria-pressed="false">Analytics</button>
     </nav>
   </div>
 </header>
@@ -162,11 +163,12 @@ footer{max-width:1180px;margin:0 auto;padding:0 20px 30px;color:var(--muted);fon
 (function(){
   const slug = new URLSearchParams(location.search).get('p') || 'griffin-jax';
   if (window.NB_BIOMECH) { boot(); return; }          // standalone build has data inlined
-  let left = 2;
+  const files = ['data/'+slug+'.js','data/'+slug+'.notes.js','data/'+slug+'.analytics.js','data/'+slug+'.reviews.js'];
+  let left = files.length;
   const done = () => { if (--left === 0) boot(); };
-  ['data/'+slug+'.js','data/'+slug+'.notes.js'].forEach(src=>{
+  files.forEach(src=>{
     const s=document.createElement('script'); s.src=src; s.onload=done;
-    s.onerror=()=>{ if(src.endsWith('notes.js')) done(); else document.getElementById('app').innerHTML='<div class="panel">No data file found for <b>'+slug+'</b>. Run tools/build_biomech.py.</div>'; };
+    s.onerror=()=>{ if(src!==files[0]) done(); else document.getElementById('app').innerHTML='<div class="panel">No data file found for <b>'+slug+'</b>. Run tools/build_biomech.py.</div>'; };
     document.head.appendChild(s);
   });
 })();
@@ -200,20 +202,24 @@ function dec(unit, v){
   if (unit==='N' || unit==='°/s' || unit==='°/s²' || a>=1000) return Math.round(v).toLocaleString('en-US');
   return v.toFixed(d);
 }
+const withUnit = (txt,unit) => (unit==='°'||unit==='%') ? txt+unit : txt+' '+unit;
 const fmt = (k,v) => (MK[k]?.group==='gametotal' && v!=null) ? Math.round(v).toLocaleString('en-US') : dec(MK[k]?.unit, v);
 const val = (s,k,p) => p ? s.pitches[p]?.v?.[k] : s.all?.[k];
 const fixedCell = (s,k,p) => (s.flags||[]).find(f=>(f.type==='fix'||f.type==='text') && f.key===k && f.pitch===p);
 
 /* ---------- state ---------- */
-const st = { report:'bio', tab:'summary', focus: S[S.length-1].date, dataMode:'game', dataGroup:'all', q:'' };
+const A = window.NB_ANALYTICS || null, RV = window.NB_REVIEWS || {};
+const AS = A ? A.starts : [];
+const st = { report:'bio', tab:'summary', focus: S[S.length-1].date, dataMode:'game', dataGroup:'all', q:'',
+  aTab:'season', aFocus: AS.length ? AS[AS.length-1].date : null, aOpeners:false, aPitch:'all', aMetric:'whiffPct' };
 
 /* ---------- header ---------- */
 const P = D.player;
 document.getElementById('pname').insertAdjacentText('beforeend', P.name);
 document.getElementById('pteam').textContent = `${P.throws}HP  |  ${P.team}`;
 const totalCap = S.reduce((a,s)=>a+s.captured,0);
-document.getElementById('facts').innerHTML =
-  `<div>${S.length}<small>games captured</small></div><div>${totalCap}<small>pitches on file</small></div><div>${md(S[0].date)}–${md(S[S.length-1].date)}<small>${P.season} window</small></div>`;
+const factsBio = `<div>${S.length}<small>mocap games</small></div><div>${totalCap}<small>pitches captured</small></div><div>${md(S[0].date)}–${md(S[S.length-1].date)}<small>${P.season} window</small></div>`;
+const factsAna = A ? (()=>{ const ss=A.starts.filter(x=>x.role==='starter'); return `<div>${ss.length}<small>starts</small></div><div>${A.season.all.n.toLocaleString('en-US')}<small>pitches as a starter</small></div><div>${md(ss[0].date)}–${md(ss[ss.length-1].date)}<small>${P.season} window</small></div>`; })() : factsBio;
 document.getElementById('foot').textContent = `No Brand Baseball Analytics  |  built ${D.built}  |  internal use only`;
 document.querySelectorAll('.switch button').forEach(b=>b.onclick=()=>{st.report=b.dataset.report;render();});
 
@@ -330,7 +336,7 @@ function vSummary(){
   <p class="lede">What changed in this game compared with his other ${base.length} ${base.length===1?'game':'games'}${away(f)?'':` at ${esc(homePark)}`}. A metric only shows up here if the game average moved well past his normal pitch-to-pitch spread <i>and</i> nearly every pitch type moved the same way.</p>
   <div class="panel">
     <h3>Biggest movers this game</h3>
-    ${mv.length? mv.map(o=>`<div class="mover"><div class="nm">${esc(o.m.label)}<small>${fmt(o.m.key,o.fv)} ${o.m.unit} this game, ${fmt(o.m.key,o.bv)} before</small></div>
+    ${mv.length? mv.map(o=>`<div class="mover"><div class="nm">${esc(o.m.label)}<small>${withUnit(fmt(o.m.key,o.fv),o.m.unit)} this game, ${withUnit(fmt(o.m.key,o.bv),o.m.unit)} before</small></div>
       <div>${moverBar(o)}</div><div class="ag"><b>${o.diff>0?'+':''}${fmt(o.m.key,o.diff)}</b>${o.agree} of ${o.n} pitch types</div></div>`).join('')
       : `<div class="empty">Nothing moved past his normal spread. ${base.length<2?'More games at this park will sharpen this.':''}</div>`}
   </div>
@@ -416,7 +422,7 @@ function vPitches(){
     <div class="panel"><h3>Release window</h3>${g}<div class="legend">${allPitches.map(p=>`<span class="pt" style="--c:${pc(p)}">${p}</span>`).join('')}</div></div>
     <div class="panel"><h3>Differences that repeat every game</h3>
       <p class="stamp" style="margin-top:0">A pitch shows up here only if it sits on the same side of his other pitches in all ${S.length} games, by more than the normal spread.</p>
-      ${rp.length? rp.slice(0,10).map(o=>`<div class="mover" style="grid-template-columns:1fr auto"><div class="nm"><span class="pt" style="--c:${pc(o.p)}">${PT[o.p]}</span> ${o.ds[0]>0?'higher':'lower'}: ${esc(o.m.label.toLowerCase())}<small>vs his other pitches, by game: ${o.ds.map(d=>(d>0?'+':'')+dec(o.m.unit,d)).join(', ')} ${o.m.unit}</small></div></div>`).join('') : '<div class="empty">Needs at least two games.</div>'}
+      ${rp.length? rp.slice(0,10).map(o=>`<div class="mover" style="grid-template-columns:1fr auto"><div class="nm"><span class="pt" style="--c:${pc(o.p)}">${PT[o.p]}</span> ${o.ds[0]>0?'higher':'lower'}: ${esc(o.m.label.toLowerCase())}<small>vs his other pitches, by game: ${o.ds.map(d=>withUnit((d>0?'+':'')+dec(o.m.unit,d),o.m.unit)).join(', ')}</small></div></div>`).join('') : '<div class="empty">Needs at least two games.</div>'}
     </div>
   </div>
   <div class="panel"><h3>${longDate(f.date)} by pitch type</h3><div class="tw">${pitchTable(f, keys)}</div></div>`;
@@ -483,22 +489,24 @@ function vLog(){
     const mix=pitchesOf(s).map(p=>`${p} ${s.pitches[p].n}${s.thrown?`/${s.thrown[p]??0}`:''}`).join(', ');
     return `<div class="panel"><h3>${longDate(s.date)} ${s.home===false?'at':'vs'} ${esc(s.opp||'unmatched')}</h3>
     <dl class="kv">
-      <dt>Source</dt><dd>${esc(s.file)} — sheet "${esc(s.sheet.trim())}", dated ${md(s.sheetDate)} on the sheet</dd>
+      <dt>Source</dt><dd>${esc(s.file)} — ${esc(s.sheet)}, dated ${md(s.sheetDate)} on the sheet</dd>
       <dt>Matched to</dt><dd>${s.verified?`${esc(s.venue)}, ${s.line.ip} IP, ${s.line.pc} pitches${fl.some(x=>x.type==='date')?` <span class="chip" style="background:var(--flag)">date fixed</span>`:''}`:'<b>not verified against a real start</b>'}</dd>
       <dt>Captured / thrown</dt><dd>${mix}${s.verified?` — ${s.captured} of ${s.line.pc}`:''}</dd>
       ${s.velo?`<dt>Velocity that night</dt><dd>${pitchesOf(s).map(p=>`${p} ${s.velo[p]!=null?s.velo[p].toFixed(1):'–'}`).join(', ')} mph</dd>`:''}
     </dl>
     <ul class="log">
+      ${fl.filter(x=>x.type==='resent').map(x=>`<li><b>Re-sent sheet:</b> ${esc(x.file)} replaces the earlier copy in ${esc(x.prev)} (dated ${md(x.prevSheetDate)} there). ${x.changed.length?`${x.changed.length} values changed: `+x.changed.map(c=>`${c.pitch} ${esc(MK[c.key]?.label||c.key)} ${c.was} → ${c.now}`).join('; ')+'.':'No values changed.'}</li>`).join('')}
       ${fl.filter(x=>x.type==='date').map(x=>`<li><b>Date:</b> sheet says ${md(x.sheet)}, but the pitch mix only matches his ${md(x.actual)} start (${esc(x.why)}). Filed under ${md(x.actual)}.</li>`).join('')}
       ${fl.filter(x=>x.type==='fix').map(x=>`<li><b>Corrected</b> ${lab(x)}: ${x.raw} → ${x.fixed}. ${esc(x.why)}</li>`).join('')}
       ${fl.filter(x=>x.type==='text').map(x=>`<li><b>Text in a number cell</b> ${lab(x)}: "${esc(x.raw)}" → ${x.fixed??'blank'}. ${esc(x.why)}</li>`).join('')}
       ${fl.filter(x=>x.type==='dup').map(x=>{ const res=fl.some(y=>y.type==='fix'&&y.key===x.key&&y.pitch===x.pitch); return `<li><b>Repeated row disagrees</b> ${lab(x)}: ${x.primary} vs ${x.repeat} (rows ${x.rows.join(' and ')}). ${res?'Resolved by the correction above.':`Using ${x.primary}.`}</li>`; }).join('')}
-      ${fl.filter(x=>x.type==='total').map(x=>`<li><b>Game total off</b> ${lab(x)}: sheet ${x.sheet}, per-pitch × count = ${x.computed}. Using ${x.computed}.</li>`).join('')}
+      ${fl.filter(x=>x.type==='total').map(x=>{ const base=x.key.replace('gt_',''); const res=fl.some(y=>y.type==='fix'&&y.pitch===x.pitch&&y.key===base); return `<li><b>Game total off</b> ${lab(x)}: sheet ${x.sheet}, per-pitch × count = ${x.computed}. ${res?'The sheet total was right; resolved by the per-pitch correction above.':'Using the per-pitch value × count.'}</li>`; }).join('')}
       ${fl.filter(x=>x.type==='summary').map(x=>`<li><b>Session average disagrees</b> ${esc(MK[x.key].label)}: sheet ${x.sheet}, pitch-weighted ${x.computed}.</li>`).join('')}
       ${fl.filter(x=>x.type==='kept').map(x=>`<li><b>Checked and kept</b> ${lab(x)}: ${x.raw}. ${esc(x.why)}</li>`).join('')}
       ${fl.filter(x=>x.type==='suspect').map(x=>`<li><b>Needs a look</b> ${lab(x)}: ${x.value} (${esc(x.why)}). Not changed.</li>`).join('')}
       ${fl.length===0?'<li>Clean. No issues found.</li>':''}
     </ul></div>`;}).join('')}
+  ${(D.held||[]).length?`<div class="panel"><h3>Held off the page</h3><ul class="log">${D.held.map(h=>`<li><b>${esc(h.file)}</b>, ${esc(h.sheet)} (dated ${md(h.sheetDate)} on the sheet): ${h.captured} pitches (${Object.entries(h.mix).map(([k,v])=>k+' '+v).join(', ')}). ${esc(h.why)}</li>`).join('')}</ul></div>`:''}
   <div class="panel"><h3>Reading the numbers</h3><ul class="log">
     <li>Values are averages per pitch type from the capture system. Game averages weight each pitch type by how many were captured.</li>
     <li>Release side, height, and extension are in inches in the capture system's own frame. They line up with each other within this file; they are not the same zero as ball-tracking release numbers.</li>
@@ -508,8 +516,218 @@ function vLog(){
   </ul></div>`;
 }
 
+
+/* ================= ANALYTICS ================= */
+const ATABS = [['season','Season'],['starts','Starts'],['shapes','Shapes'],['results','Results'],['locations','Locations']];
+const aStarts = () => AS.filter(x=>st.aOpeners || x.role==='starter');
+const aF = () => AS.find(x=>x.date===st.aFocus) || AS[AS.length-1];
+const aPitches = src => PORDER.filter(p=>src[p] && src[p].n>0);
+const num = (v,d=1) => v==null ? '–' : (+v).toFixed(d);
+const pct = v => v==null ? '–' : Math.round(v)+'%';
+const sgn = (v,d=1) => v==null ? '–' : (v>0?'+':'')+(+v).toFixed(d);
+const mph = v => v==null ? '–' : (+v).toFixed(1);
+
+function aRail(){
+  return `<div class="rail" role="group" aria-label="Focus start">${aStarts().map(x=>{
+    const l=x.line;
+    return `<button class="game" data-a="${x.date}" aria-pressed="${st.aFocus===x.date}">
+      ${x.mocap?`<span class="park" style="color:var(--accent)">mocap</span>`:''}
+      <b>${longDate(x.date)}</b><span class="opp">${x.home?'vs ':'at '}${esc(x.oppAbbr)}</span>
+      <div class="ln">${l.ip} IP, ${l.h} H, ${l.er} ER, ${l.bb} BB, ${l.k} K</div>
+      <div class="cap">${l.pc} pitches${RV[x.date]?' · reviewed':''}</div></button>`;}).join('')}</div>
+  <div class="ctl" style="margin-top:8px"><label style="font-size:13px;color:var(--muted)"><input type="checkbox" id="openers" ${st.aOpeners?'checked':''}> show opener-length starts before ${md(A.player.window_start)}</label></div>`;
+}
+function aTabs(){ return `<div class="tabs" role="tablist">${ATABS.map(([k,l])=>`<button role="tab" data-atab="${k}" aria-selected="${st.aTab===k}">${l}</button>`).join('')}</div>`; }
+
+function tile(v,l){ return `<div class="card" style="text-align:left"><div style="font-family:var(--display);font-size:30px;font-weight:700;line-height:1">${v}</div><div class="u" style="margin-top:4px">${l}</div></div>`; }
+
+/* movement chart: season averages (big) + per-start averages (small); focus start ringed */
+function moveChart(focus){
+  const W=520,H=440,L=46,R=14,T=14,B=44;
+  const pts=[]; aStarts().forEach(x=>aPitches(x.pitches).forEach(p=>{ const v=x.pitches[p]; if(v.n>=3) pts.push({x:v.hb,y:v.ivb,p,foc:x.date===focus.date}); }));
+  const sea=A.season.pitches;
+  const xs=pts.map(q=>q.x), ys=pts.map(q=>q.y);
+  const lim=Math.ceil(Math.max(22,...xs.map(Math.abs),...ys.map(Math.abs))/5)*5;
+  const X=scale(-lim,lim,L,W-R), Y=scale(-lim,lim,H-B,T);
+  let g=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Pitch movement">`;
+  for(let t=-lim;t<=lim;t+=5){ g+=`<line x1="${X(t)}" x2="${X(t)}" y1="${T}" y2="${H-B}" stroke="var(--grid)" stroke-width="${t===0?1.5:1}"/><line x1="${L}" x2="${W-R}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--grid)" stroke-width="${t===0?1.5:1}"/>`;
+    if(t%10===0){ g+=`<text x="${X(t)}" y="${H-B+14}" font-size="10" text-anchor="middle" fill="var(--muted)">${t}</text><text x="${L-6}" y="${Y(t)+3}" font-size="10" text-anchor="end" fill="var(--muted)">${t}</text>`; } }
+  g+=`<text x="${(L+W-R)/2}" y="${H-8}" font-size="12" text-anchor="middle" fill="var(--ink-soft)">← arm side    side-to-side movement (in)    glove side →</text>`;
+  g+=`<text transform="translate(12 ${(T+H-B)/2}) rotate(-90)" font-size="12" text-anchor="middle" fill="var(--ink-soft)">up-and-down movement (in)</text>`;
+  pts.filter(q=>!q.foc).forEach(q=>{ g+=`<circle cx="${X(q.x)}" cy="${Y(q.y)}" r="3.2" fill="${pc(q.p)}" opacity=".35"/>`; });
+  aPitches(sea).forEach(p=>{ const v=sea[p]; g+=`<circle cx="${X(v.hb)}" cy="${Y(v.ivb)}" r="11" fill="${pc(p)}" opacity=".9"><title>${PT[p]} season: ${num(v.hb)} in side, ${num(v.ivb)} in up</title></circle><text x="${X(v.hb)}" y="${Y(v.ivb)+4}" font-size="10" font-weight="700" text-anchor="middle" fill="var(--bg)">${p}</text>`; });
+  pts.filter(q=>q.foc).forEach(q=>{ g+=`<circle cx="${X(q.x)}" cy="${Y(q.y)}" r="6" fill="none" stroke="var(--gold)" stroke-width="2"><title>${md(focus.date)} ${PT[q.p]}: ${num(q.x)} side, ${num(q.y)} up</title></circle>`; });
+  return g+'</svg>';
+}
+
+/* line across starts */
+function startLine(getter, opts={}){
+  const W=opts.w||300,H=opts.h||130,L=36,R=8,T=12,B=22;
+  const xs=aStarts();
+  const series=(opts.pitches||['all']).map(p=>({p, vals:xs.map(x=>getter(x,p))}));
+  const all=series.flatMap(sr=>sr.vals).filter(v=>v!=null);
+  if(!all.length) return '<div class="empty">No data.</div>';
+  let [lo,hi]=nice(Math.min(...all),Math.max(...all));
+  if (opts.zero){ lo=Math.min(lo,0); }
+  const X=i=>L+(xs.length<2?0:(W-L-R)*i/(xs.length-1)), Y=scale(lo,hi,H-B,T);
+  let g=`<svg viewBox="0 0 ${W} ${H}" width="100%" aria-hidden="true">`;
+  [lo+(hi-lo)*0.1,(lo+hi)/2,hi-(hi-lo)*0.1].forEach(t=>{ g+=`<line x1="${L}" x2="${W-R}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--grid)"/><text x="${L-4}" y="${Y(t)+3}" font-size="9" text-anchor="end" fill="var(--muted)">${(+t).toFixed(opts.d??1)}</text>`; });
+  if (opts.zero && lo<0 && hi>0) g+=`<line x1="${L}" x2="${W-R}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--line)" stroke-width="1.5"/>`;
+  xs.forEach((x,i)=>{ if(x.date===st.aFocus) g+=`<rect x="${X(i)-6}" y="${T-6}" width="12" height="${H-B-T+10}" rx="3" fill="var(--gold-soft)"/>`; if(x.mocap) g+=`<circle cx="${X(i)}" cy="${H-B+6}" r="2.2" fill="var(--accent)"/>`; });
+  const lab=[0,Math.floor((xs.length-1)/2),xs.length-1].filter((v,i,a)=>a.indexOf(v)===i);
+  lab.forEach(i=>{ g+=`<text x="${X(i)}" y="${H-3}" font-size="9" text-anchor="middle" fill="var(--muted)">${md(xs[i].date)}</text>`; });
+  series.forEach(sr=>{
+    const col=sr.p==='all'?'var(--ink)':pc(sr.p);
+    let d='', pen=false;
+    sr.vals.forEach((v,i)=>{ if(v==null){pen=false;return;} d+=(pen?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)+' '; pen=true; });
+    g+=`<path d="${d}" fill="none" stroke="${col}" stroke-width="1.8" opacity=".85"/>`;
+    sr.vals.forEach((v,i)=>{ if(v!=null) g+=`<circle cx="${X(i)}" cy="${Y(v)}" r="${xs[i].date===st.aFocus?3.6:2.4}" fill="${col}"><title>${md(xs[i].date)} ${sr.p==='all'?'':PT[sr.p]+' '}${(+v).toFixed(opts.d??1)}</title></circle>`; });
+  });
+  return g+'</svg>';
+}
+function pitchLegend(list){ return `<div class="legend">${list.map(p=>`<span class="pt" style="--c:${pc(p)}">${p} ${PT[p]}</span>`).join('')}<span class="pt" style="--c:var(--accent)">mocap game</span></div>`; }
+
+function vASeason(){
+  const se=A.season, L=se.line, cc=se.cc, sp=se.pitches, ps=aPitches(sp), lg=A.league;
+  const rows=ps.map(p=>{ const v=sp[p]; return `<tr><td><span class="pt" style="--c:${pc(p)}">${PT[p]}</span></td>
+    <td>${Math.round(100*v.n/se.all.n)}%</td><td>${mph(v.velo)}</td><td>${num(v.ivb)}</td><td>${num(v.hb)}</td><td>${Math.round(v.spin)}</td>
+    <td>${num(v.arm)}°</td><td>${num(v.vaa)}°</td><td>${num(v.ext)}</td>
+    <td>${pct(v.whiffPct)}</td><td>${pct(v.csw)}</td><td>${pct(v.zonePct)}</td><td>${pct(v.chasePct)}</td>
+    <td>${num(v.ev)}</td><td>${sgn(v.runsSaved)}</td></tr>`; }).join('');
+  const ctx = ps.filter(p=>lg[p]).map(p=>{ const c=lg[p];
+    const dropWord = p==='FF' ? (c.dropVs<0 ? `${num(-c.dropVs)} in more carry (less drop)` : `${num(c.dropVs)} in less carry (more drop)`) : (c.dropVs<0 ? `${num(-c.dropVs)} in less drop` : `${num(c.dropVs)} in more drop`);
+    const brkWord = c.brkVs>0 ? `${num(c.brkVs)} in more side-to-side` : `${num(-c.brkVs)} in less side-to-side`;
+    const bar=(v,lab)=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)"><span style="width:92px">${lab}</span><span style="flex:1;height:6px;background:var(--grid);border-radius:3px;position:relative"><span style="position:absolute;left:${Math.max(0,Math.min(100,v))}%;top:-3px;width:3px;height:12px;background:${pc(p)};border-radius:2px"></span></span><span style="width:34px;text-align:right">${v==null?'–':Math.round(v)}</span></div>`;
+    return `<div class="card"><div class="t"><span class="pt" style="--c:${pc(p)}">${PT[p]}</span></div>
+      <p style="margin:6px 0 8px;font-size:14px;color:var(--ink-soft)">${dropWord} and ${brkWord} than ${PT[p].toLowerCase()}s thrown at his speed and release by other right-handers.</p>
+      ${bar(c.dropPct,'drop rank')}${bar(c.brkPct,'side rank')}
+      <div class="u" style="margin-top:6px">Rank = where he sits among ${c.pool} right-handers (0 = least, 100 = most, relative to their own expected movement). Full season, ${c.n} pitches.</div></div>`; }).join('');
+  const states=['First pitch','Ahead','Even','Behind','Two strikes'];
+  const usage=(h)=>states.map(sname=>{ const m=(se.byCount[sname]||{})[h]||{}; const tot=Object.values(m).reduce((a,b)=>a+b,0); if(!tot) return '';
+    return `<div style="display:grid;grid-template-columns:96px 1fr 40px;gap:8px;align-items:center;margin:4px 0;font-size:13px"><span>${sname}</span><span style="display:flex;height:16px;border-radius:3px;overflow:hidden">${PORDER.filter(p=>m[p]).map(p=>`<span title="${PT[p]} ${Math.round(100*m[p]/tot)}%" style="width:${100*m[p]/tot}%;background:${pc(p)}"></span>`).join('')}</span><span class="unit" style="text-align:right">${tot}</span></div>`; }).join('');
+  return `<h2>Season as a starter</h2><p class="lede">${esc(A.player.window_note)} Numbers below cover ${se.starts} starts through ${longDate(AS[AS.length-1].date)}.</p>
+  <div class="sm" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));margin-bottom:16px">
+    ${tile(se.starts,'starts')}${tile(L.ip,'innings')}${tile(num(L.era,2),'ERA')}${tile(num(L.kPct)+'%','strikeout rate')}${tile(num(L.bbPct)+'%','walk rate')}${tile(num(L.whip,2),'WHIP')}${tile(pct(cc.fps),'first-pitch strikes')}${tile(`${cc.twoStrike}/${cc.pas}`,'hitters to two strikes')}
+  </div>
+  <div class="panel"><h3>The arsenal</h3><div class="tw"><table><thead><tr><th>Pitch</th><th>Usage</th><th>mph</th><th>Up-down<br><span class="unit">in</span></th><th>Side<br><span class="unit">in, − = arm side</span></th><th>Spin<br><span class="unit">rpm</span></th><th>Arm angle</th><th>Approach<br><span class="unit">angle</span></th><th>Extension<br><span class="unit">ft</span></th><th>Miss rate<br><span class="unit">per swing</span></th><th>Called +<br>missed</th><th>In zone</th><th>Chase</th><th>Hit speed<br><span class="unit">mph</span></th><th>Runs saved</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="stamp">Runs saved: positive is good for him. Approach angle is how steeply the pitch is coming down as it crosses the plate.</p></div>
+  <div class="grid2">
+    <div class="panel"><h3>Movement</h3>${moveChart(aF())}<div class="stamp">Big dots: season. Small dots: each start. Gold rings: ${longDate(aF().date)}.</div></div>
+    <div class="panel"><h3>What he throws, by count</h3><p class="stamp" style="margin-top:0">Share of each pitch in each count, split by hitter side.</p>
+      <h3 style="font-size:17px;margin-top:10px">vs lefties</h3>${usage('L')}<h3 style="font-size:17px;margin-top:14px">vs righties</h3>${usage('R')}${pitchLegend(ps).replace('<span class="pt" style="--c:var(--accent)">mocap game</span>','')}</div>
+  </div>
+  <h3>How his shapes compare</h3><div class="sm">${ctx}</div>`;
+}
+
+function vAStarts(){
+  const xs=aStarts(), f=aF();
+  const rows=xs.slice().reverse().map(x=>{ const c=x.cc, v=x.pitches, rv=RV[x.date];
+    return `<tr data-row="${x.date}" style="cursor:pointer${x.date===st.aFocus?';background:var(--gold-soft)':''}"><td>${longDate(x.date)} ${x.home?'vs':'at'} ${esc(x.oppAbbr)} ${x.mocap?'<span class="chip" style="background:var(--raise);color:var(--accent)">mocap</span>':''} ${rv?'<span class="chip" style="background:var(--raise);color:var(--gold)">review</span>':''}</td>
+      <td>${x.dec||''}</td><td>${x.line.ip}</td><td>${x.line.h}</td><td>${x.line.er}</td><td>${x.line.bb}</td><td>${x.line.k}</td><td>${x.line.hr}</td><td>${x.line.pc}</td>
+      <td>${pct(c.fps)}</td><td>${c.twoStrike}/${c.pas}</td><td>${pct(x.all.whiffPct)}</td><td>${pct(x.all.csw)}</td><td>${mph(v.FF&&v.FF.velo)}</td><td>${mph(v.SI&&v.SI.velo)}</td><td>${num(x.all.ev)}</td><td>${sgn(x.all.runsSaved)}</td></tr>`; }).join('');
+  const rv=RV[f.date];
+  const ps=aPitches(f.pitches);
+  const mix=`<table><thead><tr><th>Pitch</th><th>#</th><th>mph</th><th>top</th><th>Up-down</th><th>Side</th><th>Spin</th><th>Arm angle</th><th>Swings</th><th>Misses</th><th>Called +<br>missed</th><th>In zone</th><th>Balls in play</th><th>Hit speed</th><th>95+</th><th>Runs saved</th></tr></thead><tbody>${
+    ps.map(p=>{ const v=f.pitches[p]; return `<tr><td><span class="pt" style="--c:${pc(p)}">${PT[p]}</span></td><td>${v.n}</td><td>${mph(v.velo)}</td><td>${mph(v.veloMax)}</td><td>${num(v.ivb)}</td><td>${num(v.hb)}</td><td>${Math.round(v.spin)}</td><td>${num(v.arm)}°</td><td>${v.swings}</td><td>${v.whiffs}</td><td>${pct(v.csw)}</td><td>${pct(v.zonePct)}</td><td>${v.bip}</td><td>${num(v.ev)}</td><td>${v.hard}</td><td>${sgn(v.runsSaved)}</td></tr>`; }).join('')}</tbody></table>`;
+  const review = rv ? `<div class="panel"><h3>Game review</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">${Object.entries(rv.grades).map(([k,n])=>`<span class="chip" style="background:var(--raise);color:${k==='CLEAN'?'var(--CH)':k==='FIXABLE'?'var(--gold)':'var(--ink-soft)'};font-size:13px">${n} ${k}</span>`).join('')}</div>
+      ${rv.notes.map(n=>`<div class="note"><p>${esc(n)}</p></div>`).join('')}
+      <p class="stamp">${esc(RV.legend||'')}</p></div>` : '';
+  return `<h2>Start by start</h2><p class="lede">Tap a row or a card above to focus a start. "Mocap" marks starts that also have a biomechanics capture.</p>
+  <div class="panel tw"><table><thead><tr><th>Start</th><th></th><th>IP</th><th>H</th><th>ER</th><th>BB</th><th>K</th><th>HR</th><th>Pitches</th><th>First-pitch<br>strikes</th><th>To two<br>strikes</th><th>Miss rate</th><th>Called +<br>missed</th><th>4-seam<br>mph</th><th>Sinker<br>mph</th><th>Hit speed</th><th>Runs saved</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <h2 style="font-size:24px">${longDate(f.date)} ${f.home?'vs':'at'} ${esc(f.opp)} ${f.mocap?`<button class="btn ghost" id="toMocap" style="margin-left:10px;font-size:13px">See the mocap for this start</button>`:''}</h2>
+  ${review}<div class="panel tw">${mix}</div>
+  <h3>Across starts</h3><div class="sm">
+    <div class="card"><div class="t">First-pitch strikes</div><div class="u">%</div>${startLine(x=>x.cc.fps,{d:0})}</div>
+    <div class="card"><div class="t">Hitters to two strikes</div><div class="u">% of batters faced</div>${startLine(x=>x.cc.pas?100*x.cc.twoStrike/x.cc.pas:null,{d:0})}</div>
+    <div class="card"><div class="t">Miss rate</div><div class="u">misses per swing, %</div>${startLine(x=>x.all.whiffPct,{d:0})}</div>
+    <div class="card"><div class="t">Runs saved</div><div class="u">positive = good</div>${startLine(x=>x.all.runsSaved,{zero:true})}</div>
+  </div>`;
+}
+
+function vAShapes(){
+  const ps=aPitches(A.season.pitches);
+  const pick=st.aPitch==='all'?ps:[st.aPitch];
+  const m=[['velo','Velocity','mph',1],['ivb','Up-and-down movement','in',1],['hb','Side-to-side movement','in (− = arm side)',1],['spin','Spin','rpm',0],['arm','Arm angle','°',1],['ext','Extension','ft',1],['relZ','Release height','ft',2],['vaa','Approach angle','°',1]];
+  const f=aF();
+  return `<h2>Shapes</h2><p class="lede">How each pitch has moved start to start. Gold band is ${longDate(f.date)}; blue ticks mark starts with a mocap capture, so shape changes can be read next to the body.</p>
+  <div class="ctl"><select id="apitch" aria-label="Pitch"><option value="all">All pitches</option>${ps.map(p=>`<option value="${p}"${st.aPitch===p?' selected':''}>${PT[p]}</option>`).join('')}</select></div>
+  ${pitchLegend(pick)}
+  <div class="sm">${m.map(([k,l,u,d])=>`<div class="card"><div class="t">${l}</div><div class="u">${u}</div>${startLine((x,p)=>x.pitches[p]&&x.pitches[p].n>=3?x.pitches[p][k]:null,{pitches:pick,d,h:150})}</div>`).join('')}</div>
+  <div class="grid2" style="margin-top:16px"><div class="panel"><h3>Movement</h3>${moveChart(f)}<div class="stamp">Big dots: season. Small dots: each start. Gold rings: ${longDate(f.date)}.</div></div>
+  <div class="panel"><h3>${longDate(f.date)} vs his season</h3><div class="tw"><table><thead><tr><th>Pitch</th><th>mph</th><th>Up-down</th><th>Side</th><th>Spin</th><th>Arm angle</th></tr></thead><tbody>${
+    aPitches(f.pitches).filter(p=>A.season.pitches[p]).map(p=>{ const v=f.pitches[p], s0=A.season.pitches[p];
+      const cell=(a,b,d)=>a==null?'–':`${num(a,d)} <span class="unit">${sgn(a-b,d)}</span>`;
+      return `<tr><td><span class="pt" style="--c:${pc(p)}">${PT[p]}</span></td><td>${cell(v.velo,s0.velo,1)}</td><td>${cell(v.ivb,s0.ivb,1)}</td><td>${cell(v.hb,s0.hb,1)}</td><td>${cell(v.spin,s0.spin,0)}</td><td>${cell(v.arm,s0.arm,1)}</td></tr>`; }).join('')}</tbody></table></div>
+  <p class="stamp">Small number = difference from his season average.</p></div></div>`;
+}
+
+function vAResults(){
+  const xs=aStarts(), ps=aPitches(A.season.pitches);
+  const metric=st.aMetric;
+  const defs={whiffPct:['Miss rate (per swing)',v=>v.whiffPct,'%'],csw:['Called + missed strikes',v=>v.csw,'%'],zonePct:['In the zone',v=>v.zonePct,'%'],chasePct:['Chase rate',v=>v.chasePct,'%'],ev:['Average hit speed',v=>v.ev,'mph'],runsSaved:['Runs saved',v=>v.runsSaved,''],usage:['Usage',v=>v.n,'pitches']};
+  const [lab,get,unit]=defs[metric]||defs.whiffPct;
+  const vals=xs.flatMap(x=>ps.map(p=>x.pitches[p]&&x.pitches[p].n>=3?get(x.pitches[p]):null)).filter(v=>v!=null);
+  const lo=Math.min(...vals), hi=Math.max(...vals);
+  const good = metric==='ev' ? -1 : 1;
+  const shade=v=>{ if(v==null) return ''; const t=(v-lo)/((hi-lo)||1); const g=good>0?t:1-t; return `background:rgba(201,171,82,${(0.05+0.4*g).toFixed(2)})`; };
+  const grid=`<table><thead><tr><th>Start</th>${ps.map(p=>`<th><span class="pt" style="--c:${pc(p)}">${p}</span></th>`).join('')}</tr></thead><tbody>${
+    xs.slice().reverse().map(x=>`<tr${x.date===st.aFocus?' style="outline:1px solid var(--gold-line)"':''}><td>${longDate(x.date)} ${x.home?'vs':'at'} ${esc(x.oppAbbr)}</td>${ps.map(p=>{ const v=x.pitches[p]; const val=v&&v.n>=3?get(v):null; return `<td style="${metric==='usage'?'':shade(val)}">${val==null?'<span class="unit">–</span>':(metric==='runsSaved'?sgn(val):Math.round(val))}${v&&metric!=='usage'?`<span class="unit"> ${v.n}</span>`:''}</td>`; }).join('')}</tr>`).join('')}</tbody></table>`;
+  const sp=A.season.pitches;
+  const res=`<table><thead><tr><th>Pitch</th><th>Pitches</th><th>Swings</th><th>Misses</th><th>Miss rate</th><th>Balls in play</th><th>Avg hit speed</th><th>Hardest</th><th>95+ mph</th><th>Damage on contact</th><th>Runs saved</th></tr></thead><tbody>${
+    ps.map(p=>{ const v=sp[p]; return `<tr><td><span class="pt" style="--c:${pc(p)}">${PT[p]}</span></td><td>${v.n}</td><td>${v.swings}</td><td>${v.whiffs}</td><td>${pct(v.whiffPct)}</td><td>${v.bip}</td><td>${num(v.ev)}</td><td>${num(v.evMax)}</td><td>${v.hard}</td><td>${v.xwoba==null?'–':v.xwoba.toFixed(3).replace(/^0/,'')}</td><td>${sgn(v.runsSaved)}</td></tr>`; }).join('')}</tbody></table>`;
+  return `<h2>Results by pitch</h2><p class="lede">What each pitch did, start by start. Small grey number = pitches thrown; starts with fewer than 3 of a pitch are left blank.</p>
+  <div class="ctl"><span class="seg">${Object.entries(defs).map(([k,d])=>`<button data-am="${k}" aria-pressed="${metric===k}">${d[0].replace(' (per swing)','')}</button>`).join('')}</span></div>
+  <div class="panel tw"><h3>${lab}${unit&&metric!=='usage'?` <span class="unit">${unit}</span>`:''}</h3>${grid}</div>
+  <div class="panel tw"><h3>Season totals as a starter</h3>${res}<p class="stamp">Damage on contact: expected value of the contact allowed, from hit speed and angle (lower is better; league average is around .370).</p></div>`;
+}
+
+function zonePlot(x, filt){
+  const W=320,H=380, cx=W/2, sc=62, top=40;
+  const X=v=>cx+v*sc, Y=v=>top+(4.4-v)*sc;
+  const dots=x.dots.filter(d=>filt==='all'||d[0]===filt);
+  const szT=x.dots.reduce((a,d)=>a+(d[3]||0),0)/x.dots.length, szB=x.dots.reduce((a,d)=>a+(d[4]||0),0)/x.dots.length;
+  let g=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Pitch locations, catcher's view">`;
+  g+=`<rect x="${X(-0.83)}" y="${Y(szT)}" width="${1.66*sc}" height="${(szT-szB)*sc}" fill="none" stroke="var(--ink-soft)" stroke-width="1.5"/>`;
+  for(let i=1;i<3;i++){ g+=`<line x1="${X(-0.83+1.66*i/3)}" x2="${X(-0.83+1.66*i/3)}" y1="${Y(szT)}" y2="${Y(szB)}" stroke="var(--grid)"/><line x1="${X(-0.83)}" x2="${X(0.83)}" y1="${Y(szT-(szT-szB)*i/3)}" y2="${Y(szT-(szT-szB)*i/3)}" stroke="var(--grid)"/>`; }
+  g+=`<line x1="10" x2="${W-10}" y1="${Y(A.thresholds.low)}" y2="${Y(A.thresholds.low)}" stroke="var(--gold)" stroke-dasharray="4 4" opacity=".6"/><text x="${W-10}" y="${Y(A.thresholds.low)-4}" font-size="10" text-anchor="end" fill="var(--gold)">${A.thresholds.low} ft</text>`;
+  g+=`<path d="M${X(-0.71)} ${Y(0)} L${X(0.71)} ${Y(0)} L${X(0.71)} ${Y(0)+8} L${X(0)} ${Y(0)+16} L${X(-0.71)} ${Y(0)+8} Z" fill="none" stroke="var(--line)"/>`;
+  const mark={W:'miss',C:'called strike',B:'in play',F:'foul',O:'ball'};
+  dots.forEach(d=>{ if(d[1]==null) return; const col=pc(d[0]);
+    const r=d[5]==='B'&&d[6]>=95?7:5;
+    const common=`<title>${PT[d[0]]} ${d[10]} mph, ${d[8]}-${d[9]} to a ${d[7]==='L'?'lefty':'righty'}: ${mark[d[5]]}${d[6]!=null?', '+d[6]+' mph off the bat':''}</title>`;
+    if(d[5]==='W') g+=`<circle cx="${X(d[1])}" cy="${Y(d[2])}" r="${r}" fill="${col}" stroke="var(--ink)" stroke-width="1.5">${common}</circle>`;
+    else if(d[5]==='B') g+=`<rect x="${X(d[1])-r}" y="${Y(d[2])-r}" width="${2*r}" height="${2*r}" fill="none" stroke="${col}" stroke-width="2">${common}</rect>`;
+    else g+=`<circle cx="${X(d[1])}" cy="${Y(d[2])}" r="${r}" fill="${col}" opacity="${d[5]==='O'?0.35:0.8}">${common}</circle>`;
+  });
+  return g+`<text x="${cx}" y="${H-6}" font-size="11" text-anchor="middle" fill="var(--muted)">catcher's view</text></svg>`;
+}
+function vALocations(){
+  const f=aF(), xs=aStarts(), ps=aPitches(f.pitches), filt=(st.aPitch==='all'||f.pitches[st.aPitch])?st.aPitch:'all';
+  const heights = p => `<div class="card"><div class="t"><span class="pt" style="--c:${pc(p)}">${PT[p]}</span> height by start</div>
+    <div class="u">buried under ${A.thresholds.low} ft · ${A.thresholds.low}–${A.thresholds.high} ft · over ${A.thresholds.high} ft</div>
+    ${xs.map(x=>{ const v=x.pitches[p]; if(!v||v.n<3) return ''; const t=v.low+v.mid+v.high;
+      return `<div style="display:grid;grid-template-columns:48px 1fr 104px;gap:8px;align-items:center;margin:3px 0;font-size:12px"><span${x.date===st.aFocus?' style="color:var(--gold)"':''}>${md(x.date)}</span><span style="display:flex;height:12px;border-radius:2px;overflow:hidden;background:var(--grid)"><span style="width:${100*v.low/t}%;background:${pc(p)}"></span><span style="width:${100*v.mid/t}%;background:${pc(p)};opacity:.45"></span><span style="width:${100*v.high/t}%;background:var(--line)"></span></span><span class="unit">${v.low} of ${t} buried</span></div>`; }).join('')}</div>`;
+  return `<h2>Locations</h2><p class="lede">${longDate(f.date)} from the catcher's view. Filled dot with an outline = swing and miss. Square = ball in play (bigger square = hit 95 mph or harder). Faint dot = ball. The dashed line marks ${A.thresholds.low} ft, our line for "buried."</p>
+  <div class="ctl"><select id="apitch" aria-label="Pitch"><option value="all">All pitches</option>${ps.map(p=>`<option value="${p}"${filt===p?' selected':''}>${PT[p]}</option>`).join('')}</select></div>
+  <div class="grid2"><div class="panel">${zonePlot(f,filt)}${pitchLegend(filt==='all'?ps:[filt]).replace('<span class="pt" style="--c:var(--accent)">mocap game</span>','')}</div>
+  <div>${heights(filt!=='all'?filt:(f.pitches.CH?'CH':ps[0]))}</div></div>
+  <h3>Height by start, every pitch</h3><div class="sm">${aPitches(A.season.pitches).filter(p=>p!==(filt!=='all'?filt:(f.pitches.CH?'CH':ps[0]))).map(heights).join('')}</div>`;
+}
+
 function vAnalytics(){
-  return `<div class="pend"><h2>Analytics report</h2><p class="lede" style="margin:0 auto">This half of ${esc(P.name)}'s page is next: pitch grades, shapes, and results by start, lined up with the same game dates as the biomechanics above so the two can be read side by side.</p></div>`;
+  if(!A) return `<div class="pend"><h2>Analytics report</h2><p class="lede" style="margin:0 auto">No analytics file found for this player yet. Run tools/build_analytics.py.</p></div>`;
+  const V={season:vASeason,starts:vAStarts,shapes:vAShapes,results:vAResults,locations:vALocations}[st.aTab];
+  return aRail()+aTabs()+`<section role="tabpanel">${V()}</section>`;
+}
+function bindAnalytics(app){
+  app.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{st.aFocus=b.dataset.a;render();});
+  app.querySelectorAll('[data-row]').forEach(b=>b.onclick=()=>{st.aFocus=b.dataset.row;render();});
+  app.querySelectorAll('[data-atab]').forEach(b=>b.onclick=()=>{st.aTab=b.dataset.atab;render();});
+  app.querySelectorAll('[data-am]').forEach(b=>b.onclick=()=>{st.aMetric=b.dataset.am;render();});
+  const o=app.querySelector('#openers'); if(o) o.onchange=()=>{st.aOpeners=o.checked; if(!st.aOpeners && aF().role!=='starter') st.aFocus=AS[AS.length-1].date; render();};
+  const ap=app.querySelector('#apitch'); if(ap) ap.onchange=()=>{st.aPitch=ap.value;render();};
+  const tm=app.querySelector('#toMocap'); if(tm) tm.onclick=()=>{st.report='bio';st.focus=st.aFocus;st.tab='summary';render();window.scrollTo(0,0);};
 }
 
 /* ---------- exports ---------- */
@@ -526,9 +744,11 @@ function csv(){
 
 /* ---------- render ---------- */
 function render(){
+  document.getElementById('facts').innerHTML = st.report==='ana' ? factsAna : factsBio;
   document.querySelectorAll('.switch button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.report===st.report));
   const app=document.getElementById('app');
-  if (st.report==='ana'){ app.innerHTML=vAnalytics(); return; }
+  const railFocus = () => { const b=app.querySelector('.rail [aria-pressed=true]'); if(b){ const r=b.parentElement; r.scrollLeft = b.offsetLeft - r.offsetLeft - 8; } };
+  if (st.report==='ana'){ app.innerHTML=vAnalytics(); bindAnalytics(app); railFocus(); return; }
   const V={summary:vSummary,sequence:vSequence,pitches:vPitches,load:vLoad,body:vBody,data:vData,log:vLog}[st.tab];
   app.innerHTML = vRail()+vTabs()+`<section role="tabpanel">${V()}</section>`;
   app.querySelectorAll('.game').forEach(b=>b.onclick=()=>{st.focus=b.dataset.g;render();});
@@ -536,6 +756,7 @@ function render(){
   app.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{st.dataMode=b.dataset.mode;render();});
   const g=app.querySelector('#grp'); if(g) g.onchange=()=>{st.dataGroup=g.value;render();};
   const q=app.querySelector('#q'); if(q) q.oninput=()=>{st.q=q.value;const pos=q.selectionStart;render();const n=document.getElementById('q');n.focus();n.setSelectionRange(pos,pos);};
+  railFocus();
   const c=app.querySelector('#csv'); if(c) c.onclick=csv;
   const j=app.querySelector('#json'); if(j) j.onclick=()=>download(P.name.toLowerCase().replace(/\s+/g,'-')+'-biomech.json',JSON.stringify(D,null,1),'application/json');
 }
