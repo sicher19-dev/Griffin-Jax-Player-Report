@@ -1,0 +1,10 @@
+{
+  "griffin-jax": {
+    "Jax_Mocap__PART_2_.xlsx|tab 3": {
+      "kind": "bullpen",
+      "label": "Bullpen block",
+      "range": ["2026-03-30", "2026-04-12"],
+      "why": "Every bullpen pitch from 3/30 through 4/12 combined on one sheet (confirmed by Brian). Not a game, so it is kept out of game-to-game comparisons."
+    }
+  }
+}

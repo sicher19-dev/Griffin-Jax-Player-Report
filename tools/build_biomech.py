@@ -369,17 +369,20 @@ def main():
     P = PLAYERS[a.player]
     corr_path = os.path.join(ROOT, "tools", "corrections.json")
     CORR = json.load(open(corr_path)).get(a.player, {}) if os.path.exists(corr_path) else {}
+    sess_path = os.path.join(ROOT, "tools", "sessions.json")
+    SESS = json.load(open(sess_path)).get(a.player, {}) if os.path.exists(sess_path) else {}
     log = []
 
     sessions = []
     for fp in a.files:
         wb = openpyxl.load_workbook(fp, data_only=True)
-        for ws in wb.worksheets:
+        for idx, ws in enumerate(wb.worksheets, 1):
             if clean(ws["B1"].value) != "date:":
                 continue
             s = parse_sheet(ws, log)
             if s:
                 s["file"] = os.path.basename(fp)
+                s["sheet"] = f"tab {idx}"   # position in the workbook (tab titles carry vendor names)
                 s["flags"] = integrity(s, log) + s["textfix"]
                 sessions.append(s)
 
@@ -415,12 +418,22 @@ def main():
                 "Houston Astros": "HOU", "Minnesota Twins": "MIN"}
 
     out_sessions = {}
+    held = []
     for s in sessions:
         mix = {k: p["n"] for k, p in s["pitches"].items()}
         rec = {"sheet": s["sheet"], "file": s["file"], "sheetDate": s["sheetDate"],
                "date": s["sheetDate"], "captured": sum(mix.values()), "mix": mix,
                "flags": s["flags"], "summary": s["summary"], "verified": False}
-        m_ = match_game(s, starts, P, log) if starts else None
+        tag = SESS.get(f"{s['file']}|{s['sheet']}")
+        if tag and tag.get("kind") == "bullpen":
+            a0, a1 = tag["range"]
+            rec.update(kind="bullpen", date=f"{a0}", label=tag.get("label", "Bullpen"), range=[a0, a1],
+                       verified=True, venue=None, oppAbbr="PEN", opp="Bullpen sessions")
+            rec["flags"].append({"type": "bullpen", "range": [a0, a1], "why": tag.get("why", "")})
+            m_ = None
+        else:
+            rec["kind"] = "game"
+            m_ = match_game(s, starts, P, log) if starts else None
         if m_:
             (diff, _), g = m_
             if diff <= 4:
@@ -433,13 +446,20 @@ def main():
                                          "why": "pitch mix matches this start exactly" if diff == 0 else f"pitch mix matches within {diff}"})
             else:
                 log.append(f"[{s['sheet']}] no confident game match (best diff {diff})")
+        if starts and not rec["verified"]:
+            held.append({"file": rec["file"], "sheet": rec["sheet"], "sheetDate": rec["sheetDate"],
+                         "captured": rec["captured"], "mix": rec["mix"],
+                         "why": "No start matches this pitch mix, so it is held off the page until the game is confirmed."})
+            continue
         # apply corrections
         for cfix in CORR.get(rec["date"], []):
             if cfix.get("keep"):
                 rec["flags"].append({"type": "kept", **cfix})  # reviewed and left as-is
                 continue
             p = s["pitches"][cfix["pitch"]]["v"]
-            assert p[cfix["key"]] == cfix["raw"], f"correction raw mismatch {cfix}"
+            if p[cfix["key"]] == cfix["fixed"] and cfix["raw"] != cfix["fixed"]:
+                continue  # already corrected in this copy of the sheet
+            assert p[cfix["key"]] == cfix["raw"], f"correction raw mismatch {cfix} (sheet has {p[cfix['key']]})"
             p[cfix["key"]] = cfix["fixed"]
             rec["flags"].append({"type": "fix", **cfix})
         pitches = {}
@@ -472,7 +492,17 @@ def main():
             if sv is not None and mk in agg and abs(sv - agg[mk]) > max(15, 0.02 * sv):
                 rec["flags"].append({"type": "summary", "key": mk, "sheet": sv, "computed": round(agg[mk])})
         if rec["date"] in out_sessions:
-            log.append(f"duplicate session {rec['date']} ({s['sheet']}) - later file wins")
+            old = out_sessions[rec["date"]]
+            changed = []
+            for code, pv in pitches.items():
+                for k, v in pv["v"].items():
+                    ov = old["pitches"].get(code, {}).get("v", {}).get(k)
+                    if k.startswith("gt_") or ov == v:
+                        continue
+                    changed.append({"pitch": code, "key": k, "was": ov, "now": v})
+            rec["flags"].insert(0, {"type": "resent", "file": rec["file"], "prev": old["file"],
+                                    "prevSheetDate": old["sheetDate"], "changed": changed})
+            log.append(f"duplicate session {rec['date']} ({s['sheet']}) - later file wins, {len(changed)} values differ")
         out_sessions[rec["date"]] = rec
 
     metrics = [{k: v for k, v in spec.items() if k != "expect"} for spec in C.values()]
@@ -480,7 +510,7 @@ def main():
                        "unit": "°", "agg": "wavg"})
     data = {"player": P, "built": datetime.date.today().isoformat(),
             "metrics": metrics,
-            "sessions": [out_sessions[k] for k in sorted(out_sessions)]}
+            "sessions": [out_sessions[k] for k in sorted(out_sessions)], "held": held}
     reviewed = {(d_, c["pitch"], c["key"]) for d_, lst in CORR.items() for c in lst}
     for f in scan_suspects(data["sessions"], metrics):
         if (f["date"], f["pitch"], f["key"]) in reviewed:

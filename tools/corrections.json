@@ -13,7 +13,7 @@
         "key": "tr_flex_max",
         "raw": 81.9,
         "fixed": -81.9,
-        "why": "Sign flip. Every other pitch in all four games reads -68.6 to -87.2."
+        "why": "Sign flip. Every other pitch in the first four captured games reads -68.6 to -87.2."
       }
     ],
     "2026-07-28": [
@@ -22,7 +22,7 @@
         "key": "com_v_fc",
         "raw": 27.7,
         "fixed": -27.7,
-        "why": "Sign flip. Every other pitch type in all four games reads -24.8 to -28.4."
+        "why": "Sign flip. Every other pitch type in the first four captured games reads -24.8 to -28.4."
       }
     ],
     "2026-08-02": [
@@ -38,14 +38,14 @@
         "key": "tr_flex_br",
         "raw": 43.3,
         "fixed": -43.3,
-        "why": "Sign flip. Every other pitch in all four games reads -39.9 to -47.8."
+        "why": "Sign flip. Every other pitch in the first four captured games reads -39.9 to -47.8."
       },
       {
         "pitch": "CH",
         "key": "lh_abd_fc",
         "raw": 26.3,
         "fixed": -26.3,
-        "why": "Sign flip. Every other pitch in all four games reads -25.0 to -28.0."
+        "why": "Sign flip. Every other pitch in the first four captured games reads -25.0 to -28.0."
       }
     ],
     "2026-07-17": [
@@ -54,7 +54,7 @@
         "key": "lk_ext_vel",
         "raw": 600,
         "fixed": -600,
-        "why": "Sign flip. Every other pitch in all four games reads -493 to -612."
+        "why": "Sign flip. Every other pitch in the first four captured games reads -493 to -612."
       },
       {
         "pitch": "CH",
@@ -62,6 +62,59 @@
         "raw": -1.7,
         "keep": true,
         "why": "Reviewed and kept. Vertical body speed passes through zero near release, and that night's values were all small (0.7 to 3.2)."
+      }
+    ],
+    "2026-07-11": [
+      {
+        "pitch": "SI",
+        "key": "sh_force",
+        "raw": 1296.1,
+        "fixed": 1396.1,
+        "why": "Digit slip. The sheet's own game total (22,337 over 16 sinkers) and body-weight value (1.61, same as the four-seam at 1,395.6) both work out to 1,396.1."
+      },
+      {
+        "pitch": "FF",
+        "key": "sh_rot_mer",
+        "raw": 289.8,
+        "fixed": 189.8,
+        "why": "Extra hundreds digit. Every other pitch in all five games reads 188.1 to 195.4."
+      },
+      {
+        "pitch": "SW",
+        "key": "tr_flex_max",
+        "raw": 71.9,
+        "fixed": -71.9,
+        "why": "Sign flip. Every other pitch in all five games reads -68.6 to -87.2."
+      },
+      {
+        "pitch": "FF",
+        "key": "com_v_mer",
+        "raw": 5.1,
+        "fixed": -5.1,
+        "why": "Sign flip. Every other pitch in all five games reads negative, and the four-seam is the smallest of his pitches in every game (-3.1 to -4.4)."
+      }
+    ],
+    "2026-03-30": [
+      {
+        "pitch": "SI",
+        "key": "lh_abd_fc",
+        "raw": 27.8,
+        "fixed": -27.8,
+        "why": "Sign flip. Every other pitch in the pen block and all five games reads -25.0 to -28.0."
+      },
+      {
+        "pitch": "CU",
+        "key": "sh_rot_fc",
+        "raw": 48.6,
+        "keep": true,
+        "why": "Reviewed and kept. The curve reads the highest of his pitches here in every game too (44.7 to 47.8)."
+      },
+      {
+        "pitch": "CU",
+        "key": "tr_flex_mer",
+        "raw": -15.1,
+        "keep": true,
+        "why": "Reviewed and kept, but worth a look in the source. The curve is his least-tilted pitch at layback in every game too, though the gap here (about 10\u00b0) is bigger than in games (2\u00b0 to 5\u00b0)."
       }
     ]
   }
