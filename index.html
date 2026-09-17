@@ -191,7 +191,12 @@ const allPitches = PORDER.filter(p=>S.some(s=>s.pitches[p]));
 /* home park = the venue with the most captured games; others get flagged */
 const venueCount = {}; S.forEach(s=>{ if(s.venue) venueCount[s.venue]=(venueCount[s.venue]||0)+1; });
 const homePark = Object.entries(venueCount).sort((a,b)=>b[1]-a[1])[0]?.[0];
-const away = s => s.venue && s.venue!==homePark;
+const pen = s => s.kind==='bullpen';
+const G = S.filter(s=>!pen(s));
+const away = s => !pen(s) && s.venue && s.venue!==homePark;
+const rng = s => s.range ? `${longDate(s.range[0])}–${longDate(s.range[1])}` : longDate(s.date);
+const nameOf = s => pen(s) ? `Bullpen block, ${rng(s)}` : `${longDate(s.date)} ${s.home===false?'at':'vs'} ${s.opp||''}`;
+const shortOf = s => pen(s) ? 'Pen' : md(s.date);
 
 function dec(unit, v){
   if (v==null || isNaN(v)) return '–';
@@ -218,7 +223,7 @@ const P = D.player;
 document.getElementById('pname').insertAdjacentText('beforeend', P.name);
 document.getElementById('pteam').textContent = `${P.throws}HP  |  ${P.team}`;
 const totalCap = S.reduce((a,s)=>a+s.captured,0);
-const factsBio = `<div>${S.length}<small>mocap games</small></div><div>${totalCap}<small>pitches captured</small></div><div>${md(S[0].date)}–${md(S[S.length-1].date)}<small>${P.season} window</small></div>`;
+const factsBio = `<div>${G.length}<small>mocap games</small></div>${S.some(pen)?`<div>+${S.filter(pen).length}<small>bullpen block</small></div>`:''}<div>${totalCap}<small>pitches captured</small></div><div>${md(S[0].date)}–${md(S[S.length-1].date)}<small>${P.season} window</small></div>`;
 const factsAna = A ? (()=>{ const ss=A.starts.filter(x=>x.role==='starter'); return `<div>${ss.length}<small>starts</small></div><div>${A.season.all.n.toLocaleString('en-US')}<small>pitches as a starter</small></div><div>${md(ss[0].date)}–${md(ss[ss.length-1].date)}<small>${P.season} window</small></div>`; })() : factsBio;
 document.getElementById('foot').textContent = `No Brand Baseball Analytics  |  built ${D.built}  |  internal use only`;
 document.querySelectorAll('.switch button').forEach(b=>b.onclick=()=>{st.report=b.dataset.report;render();});
@@ -230,8 +235,8 @@ const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
 function baselineFor(focus){
   // compare the focus game to the other games in the same park; fall back to all other games
   const f = S.find(s=>s.date===focus);
-  let base = S.filter(s=>s.date!==focus && s.venue===f.venue);
-  if (base.length===0) base = S.filter(s=>s.date!==focus);
+  let base = pen(f) ? G.filter(s=>s.venue===homePark) : G.filter(s=>s.date!==focus && s.venue===f.venue);
+  if (base.length===0) base = G.filter(s=>s.date!==focus);
   return {f, base};
 }
 function movers(focus){
@@ -260,18 +265,18 @@ function movers(focus){
 }
 function repeats(){
   // pitch-type differences that point the same way in every game
-  const out=[]; if (S.length<2) return out;
+  const out=[]; if (G.length<2) return out;
   M.forEach(m=>{
     if (m.group==='gametotal' || m.unit==='ratio' || m.unit==='×BW' || m.unit==='vel') return;
     allPitches.forEach(p=>{
       const ds=[], sp=[];
-      for (const s of S){
+      for (const s of G){
         const x=s.pitches[p]?.v[m.key]; if (x==null) return;
         const others=pitchesOf(s).filter(q=>q!==p).map(q=>s.pitches[q].v[m.key]).filter(v=>v!=null);
         if (others.length<2) return;
         ds.push(x-mean(others)); sp.push(Math.max(...others)-Math.min(...others));
       }
-      if (ds.length!==S.length) return;
+      if (ds.length!==G.length) return;
       const sg=Math.sign(ds[0]); if (!ds.every(d=>Math.sign(d)===sg && d!==0)) return;
       const minAbs=Math.min(...ds.map(Math.abs)); const noise=Math.max(mean(sp)/2,0.3);
       if (minAbs/noise>=1.2) out.push({m,p,ds,score:minAbs/noise});
@@ -299,23 +304,30 @@ function gameStrip(k, opts={}){
     const a=s.all[k]; if(a!=null) g+=`<line x1="${cx-step*.32}" x2="${cx+step*.32}" y1="${y(a)}" y2="${y(a)}" stroke="var(--ink)" stroke-width="2.5"/>`;
     pitchesOf(s).forEach((p,j,arr)=>{ const v=s.pitches[p].v[k]; if(v==null) return;
       const x=cx+(j-(arr.length-1)/2)*Math.min(7,step/7);
-      g+= away(s) ? `<circle cx="${x}" cy="${y(v)}" r="3.6" fill="var(--panel)" stroke="${pc(p)}" stroke-width="1.8"><title>${md(s.date)} ${PT[p]}: ${fmt(k,v)}</title></circle>`
+      g+= pen(s) ? `<rect x="${x-3.4}" y="${y(v)-3.4}" width="6.8" height="6.8" fill="none" stroke="${pc(p)}" stroke-width="1.8"><title>Bullpen ${PT[p]}: ${fmt(k,v)}</title></rect>`
+        : away(s) ? `<circle cx="${x}" cy="${y(v)}" r="3.6" fill="var(--panel)" stroke="${pc(p)}" stroke-width="1.8"><title>${md(s.date)} ${PT[p]}: ${fmt(k,v)}</title></circle>`
                   : `<circle cx="${x}" cy="${y(v)}" r="3.8" fill="${pc(p)}"><title>${md(s.date)} ${PT[p]}: ${fmt(k,v)}</title></circle>`;
     });
-    g+=`<text x="${cx}" y="${H-7}" font-size="11" text-anchor="middle" fill="${foc?'var(--gold)':'var(--muted)'}" font-weight="${foc?600:400}">${md(s.date)}</text>`;
+    g+=`<text x="${cx}" y="${H-7}" font-size="11" text-anchor="middle" fill="${foc?'var(--gold)':'var(--muted)'}" font-weight="${foc?600:400}">${shortOf(s)}</text>`;
   });
   return g+'</svg>';
 }
 function legend(extra=true){
   return `<div class="legend">${allPitches.map(p=>`<span class="pt" style="--c:${pc(p)}">${p} ${PT[p]}</span>`).join('')}
   <span><svg width="22" height="8"><line x1="1" x2="21" y1="4" y2="4" stroke="var(--ink)" stroke-width="2.5"/></svg> game average</span>
-  ${extra && S.some(away)?`<span class="pt hol" style="--c:transparent">open dot = not ${esc(homePark||'home park')}</span>`:''}</div>`;
+  ${extra && S.some(away)?`<span class="pt hol" style="--c:transparent">open dot = not ${esc(homePark||'home park')}</span>`:''}
+  ${extra && S.some(pen)?`<span style="color:var(--muted)"><svg width="10" height="10"><rect x="1.5" y="1.5" width="7" height="7" fill="none" stroke="var(--muted)" stroke-width="1.6"/></svg> open square = bullpen block</span>`:''}</div>`;
 }
 
 /* ---------- views ---------- */
 function vRail(){
   return `<div class="rail" role="group" aria-label="Focus game">${S.map(s=>{
     const l=s.line;
+    if (pen(s)) return `<button class="game" data-g="${s.date}" aria-pressed="${st.focus===s.date}">
+      <span class="park" style="color:var(--accent)">not a game</span>
+      <b>Bullpen</b><span class="opp">${md(s.range[0])}–${md(s.range[1])}</span>
+      <div class="ln">all pen work, one sheet</div>
+      <div class="cap">${s.captured} pitches captured</div></button>`;
     return `<button class="game" data-g="${s.date}" aria-pressed="${st.focus===s.date}">
       ${away(s)?`<span class="park">other park</span>`:''}
       <b>${longDate(s.date)}</b><span class="opp">${s.home===false?'at ':'vs '}${esc(s.oppAbbr||'?')}</span>
@@ -332,11 +344,11 @@ function vSummary(){
     <div class="col ${c}"><h3>${h}</h3>${arr.map(n=>`<div class="note"><b>${esc(n.h)}</b><p>${esc(n.p)}</p></div>`).join('')}</div>`).join('')}
     </div><p class="stamp">Notes written through ${longDate(N.through)}${S[S.length-1].date>N.through?` — games after this date are in the charts but not in these notes yet`:''}.</p></div>` : '';
   const heads=['mprv','mtrv','meev','mhv','fc_pel_t','sep_fc','sh_rot_mer','arm_slot','stride','varus'];
-  return `<h2>${longDate(f.date)} ${f.home===false?'at':'vs'} ${esc(f.opp||'')}</h2>
-  <p class="lede">What changed in this game compared with his other ${base.length} ${base.length===1?'game':'games'}${away(f)?'':` at ${esc(homePark)}`}. A metric only shows up here if the game average moved well past his normal pitch-to-pitch spread <i>and</i> nearly every pitch type moved the same way.</p>
+  return `<h2>${esc(nameOf(f))}</h2>
+  <p class="lede">${pen(f)?`How his bullpen work (${rng(f)}) differs from his ${base.length} games at ${esc(homePark)}. Bullpen capture runs on a different setup, so read these as differences between settings, not changes over time.`:`What changed in this game compared with his other ${base.length} ${base.length===1?'game':'games'}${away(f)?'':` at ${esc(homePark)}`}.`} A metric only shows up here if the game average moved well past his normal pitch-to-pitch spread <i>and</i> nearly every pitch type moved the same way.</p>
   <div class="panel">
-    <h3>Biggest movers this game</h3>
-    ${mv.length? mv.map(o=>`<div class="mover"><div class="nm">${esc(o.m.label)}<small>${withUnit(fmt(o.m.key,o.fv),o.m.unit)} this game, ${withUnit(fmt(o.m.key,o.bv),o.m.unit)} before</small></div>
+    <h3>${pen(f)?'Biggest differences from his games':'Biggest movers this game'}</h3>
+    ${mv.length? mv.map(o=>`<div class="mover"><div class="nm">${esc(o.m.label)}<small>${withUnit(fmt(o.m.key,o.fv),o.m.unit)} ${pen(f)?'in the pen':'this game'}, ${withUnit(fmt(o.m.key,o.bv),o.m.unit)} ${pen(f)?'in games':'before'}</small></div>
       <div>${moverBar(o)}</div><div class="ag"><b>${o.diff>0?'+':''}${fmt(o.m.key,o.diff)}</b>${o.agree} of ${o.n} pitch types</div></div>`).join('')
       : `<div class="empty">Nothing moved past his normal spread. ${base.length<2?'More games at this park will sharpen this.':''}</div>`}
   </div>
@@ -366,7 +378,7 @@ function vSequence(){
   segs.forEach((o,i)=>{
     const cy=T+rowH*i+rowH/2, foc=o.s.date===st.focus;
     if (foc) g+=`<rect x="0" y="${cy-rowH/2+4}" width="${W}" height="${rowH-8}" fill="var(--gold-soft)" rx="6"/>`;
-    g+=`<text x="8" y="${cy-4}" font-size="16" font-weight="600" fill="var(--ink)">${md(o.s.date)} ${esc(o.s.oppAbbr||'')}</text><text x="8" y="${cy+14}" font-size="12" fill="var(--muted)">${Math.round(-o.tFc)} ms FS to release${away(o.s)?' *':''}</text>`;
+    g+=`<text x="8" y="${cy-4}" font-size="16" font-weight="600" fill="var(--ink)">${pen(o.s)?'Bullpen':md(o.s.date)+' '+esc(o.s.oppAbbr||'')}</text><text x="8" y="${cy+14}" font-size="12" fill="var(--muted)">${Math.round(-o.tFc)} ms FS to release${away(o.s)?' *':''}</text>`;
     g+=`<line x1="${x(o.tFc)}" x2="${x(o.pts[4][1])}" y1="${cy}" y2="${cy}" stroke="var(--line)" stroke-width="3"/>`;
     g+=`<g><rect x="${x(o.tFc)-2}" y="${cy-14}" width="4" height="28" fill="var(--ink)"/><text x="${x(o.tFc)}" y="${cy+30}" font-size="11" text-anchor="middle" fill="var(--ink)">foot strike</text></g>`;
     o.pts.forEach(([nm,t,v],j)=>{
@@ -383,7 +395,7 @@ function vSequence(){
   const keys=['mprv','fc_pel_t','mtrv','tr_acc','pel_elb_t','tr_elb_t','meev','meev_br_t','msrv','msrv_br_t','mhv','mhv_br_t'];
   return `<h2>Sequence</h2><p class="lede">Peak rotational speed of each segment and when it peaks, measured back from ball release. Circle size follows speed. Numbers are game averages across every captured pitch.</p>
   <div class="panel"><div class="tw">${g}</div>${S.some(away)?`<div class="stamp">* captured at a different park — compare with care</div>`:''}</div>
-  <div class="panel"><h3>${longDate(f.date)} by pitch type</h3><div class="tw">${pitchTable(f, keys)}</div></div>
+  <div class="panel"><h3>${esc(nameOf(f))}, by pitch type</h3><div class="tw">${pitchTable(f, keys)}</div></div>
   <h3>By game</h3>${legend()}<div class="sm">${['mprv','mtrv','meev','msrv','mhv','fc_pel_t','tr_elb_t','tr_acc'].map(k=>`<div class="card"><div class="t">${esc(MK[k].label)}</div><div class="u">${MK[k].unit}</div>${gameStrip(k)}</div>`).join('')}</div>`;
 }
 
@@ -417,15 +429,15 @@ function vPitches(){
   g+='</svg>';
   const rp=repeats();
   const keys=['arm_slot','rel_height','rel_side','rel_ext','stride','sh_rot_mer','abd_br','elb_flex_mer','pro_mer','pro_br','meev','msrv','mhv','varus','sh_force','tr_flex_br','lean_br','lk_flex_br'];
-  return `<h2>Pitch types</h2><p class="lede">Where each pitch comes out and what the body does differently to throw it. Large dots are ${longDate(f.date)}; faint dots are his other games. Labels show arm slot.</p>
+  return `<h2>Pitch types</h2><p class="lede">Where each pitch comes out and what the body does differently to throw it. Large dots are ${pen(f)?'the bullpen block':longDate(f.date)}; faint dots are the other captures. Labels show arm slot.</p>
   <div class="grid2">
     <div class="panel"><h3>Release window</h3>${g}<div class="legend">${allPitches.map(p=>`<span class="pt" style="--c:${pc(p)}">${p}</span>`).join('')}</div></div>
     <div class="panel"><h3>Differences that repeat every game</h3>
-      <p class="stamp" style="margin-top:0">A pitch shows up here only if it sits on the same side of his other pitches in all ${S.length} games, by more than the normal spread.</p>
+      <p class="stamp" style="margin-top:0">A pitch shows up here only if it sits on the same side of his other pitches in all ${G.length} games, by more than the normal spread.</p>
       ${rp.length? rp.slice(0,10).map(o=>`<div class="mover" style="grid-template-columns:1fr auto"><div class="nm"><span class="pt" style="--c:${pc(o.p)}">${PT[o.p]}</span> ${o.ds[0]>0?'higher':'lower'}: ${esc(o.m.label.toLowerCase())}<small>vs his other pitches, by game: ${o.ds.map(d=>withUnit((d>0?'+':'')+dec(o.m.unit,d),o.m.unit)).join(', ')}</small></div></div>`).join('') : '<div class="empty">Needs at least two games.</div>'}
     </div>
   </div>
-  <div class="panel"><h3>${longDate(f.date)} by pitch type</h3><div class="tw">${pitchTable(f, keys)}</div></div>`;
+  <div class="panel"><h3>${esc(nameOf(f))}, by pitch type</h3><div class="tw">${pitchTable(f, keys)}</div></div>`;
 }
 
 function vLoad(){
@@ -434,13 +446,13 @@ function vLoad(){
   const norm=['varus_n','sh_force_n','sh_torque_n'];
   const gt=['gt_varus','gt_sh_force','gt_sh_torque'];
   let tot=`<table><thead><tr><th>Game</th><th>Pitches captured</th>${gt.map(k=>`<th>${esc(MK[k].label.replace('Game total: peak ','Peak ').replace('Game total: ',''))}<br><span class="unit">${MK[k].unit}</span></th>`).join('')}</tr></thead><tbody>`;
-  S.forEach(s=>{ tot+=`<tr${s.date===st.focus?' style="background:var(--gold-soft)"':''}><td>${longDate(s.date)} ${s.home===false?'at':'vs'} ${esc(s.oppAbbr||'')}${away(s)?' *':''}</td><td>${s.captured}</td>${gt.map(k=>`<td>${fmt(k,s.all[k])}</td>`).join('')}</tr>`; });
+  S.forEach(s=>{ tot+=`<tr${s.date===st.focus?' style="background:var(--gold-soft)"':''}><td>${pen(s)?esc(nameOf(s)):`${longDate(s.date)} ${s.home===false?'at':'vs'} ${esc(s.oppAbbr||'')}`}${away(s)?' *':''}</td><td>${s.captured}</td>${gt.map(k=>`<td>${fmt(k,s.all[k])}</td>`).join('')}</tr>`; });
   tot+='</tbody></table>';
   return `<h2>Arm load</h2><p class="lede">Force and torque at the shoulder and elbow on each pitch, then added up across every captured pitch in the game. Per-pitch numbers compare games fairly; game totals mostly track how many pitches he threw.</p>
   ${legend()}
   <div class="sm">${per.map(k=>`<div class="card"><div class="t">${esc(MK[k].label)}</div><div class="u">${MK[k].unit} per pitch</div>${gameStrip(k,{h:140})}</div>`).join('')}</div>
-  <div class="panel" style="margin-top:16px"><h3>Game totals</h3><div class="tw">${tot}</div><p class="stamp">Game total = per-pitch value × pitches captured, summed over pitch types. Uncaptured pitches are not counted.${S.some(away)?' * different park.':''}</p></div>
-  <div class="panel"><h3>${longDate(f.date)} by pitch type</h3><div class="tw">${pitchTable(f,[...per,...norm,...gt])}</div>
+  <div class="panel" style="margin-top:16px"><h3>Game totals</h3><div class="tw">${tot}</div><p class="stamp">Game total = per-pitch value × pitches captured, summed over pitch types. Uncaptured pitches are not counted.${S.some(pen)?' The bullpen row adds up two weeks of pen work, not one outing.':''}${S.some(away)?' * different park.':''}</p></div>
+  <div class="panel"><h3>${esc(nameOf(f))}, by pitch type</h3><div class="tw">${pitchTable(f,[...per,...norm,...gt])}</div>
   <p class="stamp">Body-weight versions divide by his body weight so different-sized arms can be compared.</p></div>`;
 }
 
@@ -463,7 +475,7 @@ function vData(){
   const keys=M.filter(m=>(st.dataGroup==='all'||m.group===st.dataGroup) && (!q || m.label.toLowerCase().includes(q) || m.key.includes(q))).map(m=>m.key);
   let body;
   if (st.dataMode==='game'){
-    body=`<table><thead><tr><th>Metric</th>${S.map(s=>`<th>${md(s.date)} ${esc(s.oppAbbr||'')}${away(s)?' *':''}</th>`).join('')}<th>Unit</th></tr></thead><tbody>`;
+    body=`<table><thead><tr><th>Metric</th>${S.map(s=>`<th>${pen(s)?'Bullpen<br>'+md(s.range[0])+'–'+md(s.range[1]):md(s.date)+' '+esc(s.oppAbbr||'')}${away(s)?' *':''}</th>`).join('')}<th>Unit</th></tr></thead><tbody>`;
     let lastG=null;
     keys.forEach(k=>{ const m=MK[k];
       if (m.group!==lastG){ lastG=m.group; body+=`<tr><td class="grp" colspan="${S.length+2}">${GROUPS[m.group]||m.group}</td></tr>`; }
@@ -487,14 +499,15 @@ function vLog(){
   ${S.map(s=>{
     const fl=s.flags||[];
     const mix=pitchesOf(s).map(p=>`${p} ${s.pitches[p].n}${s.thrown?`/${s.thrown[p]??0}`:''}`).join(', ');
-    return `<div class="panel"><h3>${longDate(s.date)} ${s.home===false?'at':'vs'} ${esc(s.opp||'unmatched')}</h3>
+    return `<div class="panel"><h3>${esc(nameOf(s))}</h3>
     <dl class="kv">
       <dt>Source</dt><dd>${esc(s.file)} — ${esc(s.sheet)}, dated ${md(s.sheetDate)} on the sheet</dd>
-      <dt>Matched to</dt><dd>${s.verified?`${esc(s.venue)}, ${s.line.ip} IP, ${s.line.pc} pitches${fl.some(x=>x.type==='date')?` <span class="chip" style="background:var(--flag)">date fixed</span>`:''}`:'<b>not verified against a real start</b>'}</dd>
-      <dt>Captured / thrown</dt><dd>${mix}${s.verified?` — ${s.captured} of ${s.line.pc}`:''}</dd>
+      <dt>Matched to</dt><dd>${pen(s)?'Bullpen sessions, not a game (see note below)':s.verified?`${esc(s.venue)}, ${s.line.ip} IP, ${s.line.pc} pitches${fl.some(x=>x.type==='date')?` <span class="chip" style="background:var(--flag)">date fixed</span>`:''}`:'<b>not verified against a real start</b>'}</dd>
+      <dt>${pen(s)?'Captured':'Captured / thrown'}</dt><dd>${mix}${s.line?` — ${s.captured} of ${s.line.pc}`:` — ${s.captured} pitches`}</dd>
       ${s.velo?`<dt>Velocity that night</dt><dd>${pitchesOf(s).map(p=>`${p} ${s.velo[p]!=null?s.velo[p].toFixed(1):'–'}`).join(', ')} mph</dd>`:''}
     </dl>
     <ul class="log">
+      ${fl.filter(x=>x.type==='bullpen').map(x=>`<li><b>Bullpen block:</b> ${esc(x.why)}</li>`).join('')}
       ${fl.filter(x=>x.type==='resent').map(x=>`<li><b>Re-sent sheet:</b> ${esc(x.file)} replaces the earlier copy in ${esc(x.prev)} (dated ${md(x.prevSheetDate)} there). ${x.changed.length?`${x.changed.length} values changed: `+x.changed.map(c=>`${c.pitch} ${esc(MK[c.key]?.label||c.key)} ${c.was} → ${c.now}`).join('; ')+'.':'No values changed.'}</li>`).join('')}
       ${fl.filter(x=>x.type==='date').map(x=>`<li><b>Date:</b> sheet says ${md(x.sheet)}, but the pitch mix only matches his ${md(x.actual)} start (${esc(x.why)}). Filed under ${md(x.actual)}.</li>`).join('')}
       ${fl.filter(x=>x.type==='fix').map(x=>`<li><b>Corrected</b> ${lab(x)}: ${x.raw} → ${x.fixed}. ${esc(x.why)}</li>`).join('')}
