@@ -129,6 +129,8 @@ svg text{font-family:var(--body)}
 .pend{border:1px dashed var(--line);border-radius:10px;padding:28px;text-align:center;background:var(--panel)}
 .pend h2{margin-bottom:8px}
 .log li{margin:4px 0}
+.log ul{margin:4px 0 0 0;padding-left:20px}
+.log ul li{margin:2px 0;color:var(--ink-soft)}
 @media (max-width:640px){
   .mover{grid-template-columns:1fr auto}
   .mover>div:nth-child(2){grid-column:1 / -1;order:3}
@@ -215,7 +217,7 @@ const fixedCell = (s,k,p) => (s.flags||[]).find(f=>(f.type==='fix'||f.type==='te
 /* ---------- state ---------- */
 const A = window.NB_ANALYTICS || null, RV = window.NB_REVIEWS || {};
 const AS = A ? A.starts : [];
-const st = { report:'bio', tab:'summary', focus: S[S.length-1].date, dataMode:'game', dataGroup:'all', q:'',
+const st = { report:'bio', tab:'summary', focus: S[S.length-1].date, dataMode:'game', dataGroup:'all', q:'', linkM:'arm_slot', linkT:'ivb',
   aTab:'season', aFocus: AS.length ? AS[AS.length-1].date : null, aOpeners:false, aPitch:'all', aMetric:'whiffPct' };
 
 /* ---------- header ---------- */
@@ -228,7 +230,7 @@ const factsAna = A ? (()=>{ const ss=A.starts.filter(x=>x.role==='starter'); ret
 document.getElementById('foot').textContent = `No Brand Baseball Analytics  |  built ${D.built}  |  internal use only`;
 document.querySelectorAll('.switch button').forEach(b=>b.onclick=()=>{st.report=b.dataset.report;render();});
 
-const TABS = [['summary','Summary'],['sequence','Sequence'],['pitches','Pitch types'],['load','Arm load'],['body','Body'],['data','All data'],['log','Data log']];
+const TABS = [['summary','Summary'],['sequence','Sequence'],['pitches','Pitch types'],['shape','Body & ball'],['load','Arm load'],['body','Body'],['data','All data'],['log','Data log']];
 
 /* ---------- helpers: stats ---------- */
 const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
@@ -440,6 +442,111 @@ function vPitches(){
   <div class="panel"><h3>${esc(nameOf(f))}, by pitch type</h3><div class="tw">${pitchTable(f, keys)}</div></div>`;
 }
 
+/* ---------- Body & ball: mocap next to what the ball did ---------- */
+const BALL = window.NB_ANALYTICS ? Object.fromEntries(window.NB_ANALYTICS.starts.map(x=>[x.date,x])) : {};
+const paired = () => G.filter(s=>BALL[s.date]);        // games with both a capture and a ball file
+const ballOf = (s,p) => (BALL[s.date]||{}).pitches?.[p];
+
+/* body metric -> ball metric pairs worth looking at */
+const LINKS = [
+  {m:'arm_slot',  t:'arm',  ml:'Arm slot',            tl:'Arm angle (ball)',      d:1, note:'Two independent reads of the same thing.'},
+  {m:'rel_height',t:'relZ', ml:'Release height',      tl:'Release height (ball)', d:1, note:'Capture is in inches, ball file in feet.'},
+  {m:'rel_side',  t:'relX', ml:'Release side',        tl:'Release side (ball)',   d:1, note:'Signs are opposite: the capture counts out from the middle, the ball file counts toward first base.'},
+  {m:'rel_ext',   t:'ext',  ml:'Extension',           tl:'Extension (ball)',      d:1, note:'These two do not line up — see the note below.'},
+  {m:'mhv',       t:'velo', ml:'Peak hand speed',     tl:'Velocity',              d:0},
+  {m:'msrv',      t:'velo', ml:'Peak shoulder speed', tl:'Velocity',              d:0},
+  {m:'sh_rot_mer',t:'velo', ml:'Layback',             tl:'Velocity',              d:1},
+  {m:'arm_slot',  t:'ivb',  ml:'Arm slot',            tl:'Up-and-down movement',  d:1},
+  {m:'hz_max',    t:'hb',   ml:'Scap load',           tl:'Side-to-side movement', d:1},
+  {m:'pro_br',    t:'hb',   ml:'Forearm pronation at release', tl:'Side-to-side movement', d:1},
+];
+function pearson(x,y){
+  const n=x.length; if(n<3) return null;
+  const mx=x.reduce((a,b)=>a+b,0)/n, my=y.reduce((a,b)=>a+b,0)/n;
+  const sx=Math.sqrt(x.reduce((a,v)=>a+(v-mx)**2,0)), sy=Math.sqrt(y.reduce((a,v)=>a+(v-my)**2,0));
+  if(!sx||!sy) return null;
+  return x.reduce((a,v,i)=>a+(v-mx)*(y[i]-my),0)/(sx*sy);
+}
+/* mini scatter: one dot per game for a single pitch type */
+function miniScatter(pts, col, focusIdx){
+  const W=150,H=104,L=6,R=6,T=8,B=8;
+  if(pts.length<2) return '';
+  const xs=pts.map(q=>q[0]), ys=pts.map(q=>q[1]);
+  const [x0,x1]=nice(Math.min(...xs),Math.max(...xs)), [y0,y1]=nice(Math.min(...ys),Math.max(...ys));
+  const X=scale(x0,x1,L,W-R), Y=scale(y0,y1,H-B,T);
+  let g=`<svg viewBox="0 0 ${W} ${H}" width="100%" aria-hidden="true">`;
+  g+=`<rect x="0" y="0" width="${W}" height="${H}" fill="var(--panel-2)" rx="4"/>`;
+  pts.forEach((q,i)=>{ const f=i===focusIdx;
+    g+=`<circle cx="${X(q[0]).toFixed(1)}" cy="${Y(q[1]).toFixed(1)}" r="${f?5:3.4}" fill="${f?'none':col}" stroke="${f?'var(--gold)':'none'}" stroke-width="${f?2.4:0}" opacity="${f?1:.8}"><title>${esc(q[2])}</title></circle>`; });
+  return g+'</svg>';
+}
+function vShape(){
+  const P7=paired(), f=S.find(s=>s.date===st.focus);
+  if(!P7.length) return `<h2>Body &amp; ball</h2><div class="empty">The analytics file isn't loaded, so there is nothing to pair the capture against.</div>`;
+  const fb=BALL[f.date];
+  const idx=P7.findIndex(s=>s.date===f.date);
+  const link=LINKS.find(l=>l.m===st.linkM&&l.t===st.linkT)||LINKS[7];
+  const ps=pitchesOf(f).filter(p=>ballOf(f,p));
+
+  /* focused game: body columns then ball columns */
+  const side = fb ? `<div class="tw"><table><thead>
+    <tr><th></th><th colspan="6" style="text-align:center;color:var(--accent-strong);border-bottom:1px solid var(--line)">What the body did</th><th colspan="5" style="text-align:center;color:var(--gold);border-bottom:1px solid var(--line)">What the ball did</th></tr>
+    <tr><th>Pitch</th><th>Arm slot</th><th>Release<br>height</th><th>Release<br>side</th><th>Layback</th><th>Scap<br>load</th><th>Pronation<br>at release</th>
+    <th>#</th><th>mph</th><th>Up-down<br><span class="unit">in</span></th><th>Side<br><span class="unit">in</span></th><th>Spin<br><span class="unit">rpm</span></th></tr></thead><tbody>${
+    ps.map(p=>{ const m=f.pitches[p].v, t=ballOf(f,p);
+      return `<tr><td><span class="pt" style="--c:${pc(p)}">${PT[p]}</span></td>
+        <td>${fmt('arm_slot',m.arm_slot)}°</td><td>${fmt('rel_height',m.rel_height)}</td><td>${fmt('rel_side',m.rel_side)}</td>
+        <td>${fmt('sh_rot_mer',m.sh_rot_mer)}°</td><td>${fmt('hz_max',m.hz_max)}°</td><td>${fmt('pro_br',m.pro_br)}°</td>
+        <td class="avgcol">${t.n}</td><td class="avgcol">${t.velo==null?'–':t.velo.toFixed(1)}</td><td class="avgcol">${t.ivb==null?'–':t.ivb.toFixed(1)}</td>
+        <td class="avgcol">${t.hb==null?'–':t.hb.toFixed(1)}</td><td class="avgcol">${t.spin==null?'–':Math.round(t.spin)}</td></tr>`;
+    }).join('')}</tbody></table></div>
+    <p class="stamp">Capture numbers are in the capture system's own frame (inches, its own zero). Ball numbers come from the game feed. Side-to-side: negative runs to his arm side.</p>` : '';
+
+  /* agreement between the two systems, pooled across every captured pitch */
+  const agree = ['arm_slot','rel_height','rel_side','rel_ext'].map(k=>{
+    const L=LINKS.find(l=>l.m===k);
+    const xs=[],ys=[],lab=[];
+    P7.forEach(s=>pitchesOf(s).forEach(p=>{ const t=ballOf(s,p); if(!t||s.pitches[p].v[k]==null||t[L.t]==null) return;
+      xs.push(s.pitches[p].v[k]); ys.push(t[L.t]); lab.push(`${md(s.date)} ${PT[p]}`); }));
+    const r=pearson(xs,ys), strong=r!=null&&Math.abs(r)>=0.7;
+    const W=190,H=150,L2=8,R2=8,T2=10,B2=10;
+    const [x0,x1]=nice(Math.min(...xs),Math.max(...xs)), [y0,y1]=nice(Math.min(...ys),Math.max(...ys));
+    const X=scale(x0,x1,L2,W-R2), Y=scale(y0,y1,H-B2,T2);
+    let g=`<svg viewBox="0 0 ${W} ${H}" width="100%" aria-hidden="true"><rect width="${W}" height="${H}" fill="var(--panel-2)" rx="4"/>`;
+    xs.forEach((v,i)=>{ g+=`<circle cx="${X(v).toFixed(1)}" cy="${Y(ys[i]).toFixed(1)}" r="3" fill="var(--accent)" opacity=".75"><title>${esc(lab[i])}</title></circle>`; });
+    g+='</svg>';
+    return `<div class="card"><div class="t">${L.ml} <span class="unit">vs</span> ${L.tl}</div>
+      <div class="u" style="color:${strong?'var(--CH)':'var(--flag)'}">${r==null?'–':(strong?'they agree':'they do not line up')} · r ${r==null?'–':r.toFixed(2)} · ${xs.length} pitch-games</div>
+      ${g}<p class="stamp" style="margin:6px 0 0">${esc(L.note||'')}</p></div>`;
+  }).join('');
+
+  /* body -> ball, one mini scatter per pitch type */
+  const cells = PORDER.filter(p=>P7.every(s=>s.pitches[p]&&ballOf(s,p))).map(p=>{
+    const pts=P7.map(s=>{ const m=s.pitches[p].v[link.m], t=ballOf(s,p)[link.t];
+      return (m==null||t==null)?null:[m,t,`${md(s.date)} — ${link.ml} ${(+m).toFixed(link.d)}, ${link.tl} ${(+t).toFixed(link.d)}`]; }).filter(Boolean);
+    const r=pearson(pts.map(q=>q[0]),pts.map(q=>q[1]));
+    const ns=P7.map(s=>s.pitches[p].n), nlo=Math.min(...ns), nhi=Math.max(...ns);
+    const thin=nlo<8;
+    const tag = r==null?'–':Math.abs(r)>=0.7?'moves together':Math.abs(r)>=0.4?'leans that way':'no link';
+    return `<div class="card"><div class="t"><span class="pt" style="--c:${pc(p)}">${PT[p]}</span></div>
+      <div class="u">${tag}${r==null?'':` · r ${r.toFixed(2)}`} · ${pts.length} games · ${nlo===nhi?nlo:nlo+'–'+nhi} per game${thin?' <span style="color:var(--flag)">thin</span>':''}</div>
+      ${miniScatter(pts,pc(p),P7.findIndex(s=>s.date===st.focus))}</div>`;
+  }).join('');
+
+  return `<h2>Body &amp; ball</h2>
+  <p class="lede">The capture and the game feed, side by side for the ${P7.length} games that have both. Everything here is a game average per pitch type, so it answers "what did his body do when the ball moved this way," not what any single pitch did.</p>
+  <div class="panel"><h3>${esc(nameOf(f))}</h3>${side}</div>
+  <div class="panel"><h3>Do the two systems agree?</h3>
+    <p class="stamp" style="margin-top:0">Every captured pitch type from every captured game, one dot each. If the two systems are measuring the same thing, the dots line up.</p>
+    <div class="sm" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">${agree}</div>
+    <p class="stamp">Release height, release side and arm slot line up, which is the check that matters: the capture and the ball file are describing the same delivery. Extension does not, so treat the capture's extension as its own measurement and use the ball file's number when you want the one hitters feel.</p></div>
+  <div class="panel"><h3>What moves with what</h3>
+    <div class="ctl"><select id="linkSel" aria-label="Pair">${LINKS.map((l,i)=>`<option value="${i}"${l===link?' selected':''}>${esc(l.ml)} → ${esc(l.tl)}</option>`).join('')}</select></div>
+    <p class="stamp" style="margin-top:0">One dot per game: the body number across, the ball number up. Gold ring is ${esc(nameOf(f))}.</p>
+    <div class="sm" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr))">${cells}</div>
+    <p class="stamp"><b>Read these as leads, not findings.</b> Seven games is a small sample, and a game average hides the pitch-to-pitch spread underneath it. A strong line here is a reason to look at the next capture, not a conclusion. Pitches marked <span style="color:var(--flag)">thin</span> had fewer than 8 thrown in at least one game, so those game averages move around on their own.</p></div>`;
+}
+
 function vLoad(){
   const f=S.find(s=>s.date===st.focus);
   const per=['varus','varus_mer','sh_force','sh_force_mer','sh_torque','sh_torque_mer'];
@@ -510,9 +617,21 @@ function vLog(){
       ${fl.filter(x=>x.type==='bullpen').map(x=>`<li><b>Bullpen block:</b> ${esc(x.why)}</li>`).join('')}
       ${fl.filter(x=>x.type==='resent').map(x=>`<li><b>Re-sent sheet:</b> ${esc(x.file)} replaces the earlier copy in ${esc(x.prev)} (dated ${md(x.prevSheetDate)} there). ${x.changed.length?`${x.changed.length} values changed: `+x.changed.map(c=>`${c.pitch} ${esc(MK[c.key]?.label||c.key)} ${c.was} → ${c.now}`).join('; ')+'.':'No values changed.'}</li>`).join('')}
       ${fl.filter(x=>x.type==='date').map(x=>`<li><b>Date:</b> sheet says ${md(x.sheet)}, but the pitch mix only matches his ${md(x.actual)} start (${esc(x.why)}). Filed under ${md(x.actual)}.</li>`).join('')}
-      ${fl.filter(x=>x.type==='fix').map(x=>`<li><b>Corrected</b> ${lab(x)}: ${x.raw} → ${x.fixed}. ${esc(x.why)}</li>`).join('')}
+      ${(()=>{ const fx=fl.filter(x=>x.type==='fix'), seen=new Set(), out=[];
+        fx.forEach(x=>{ if(seen.has(x.why)) return; seen.add(x.why);
+          const grp=fx.filter(y=>y.why===x.why);
+          if(grp.length===1) out.push(`<li><b>Corrected</b> ${lab(x)}: ${x.raw} → ${x.fixed==null?'left blank':x.fixed}. ${esc(x.why)}</li>`);
+          else out.push(`<li><b>Corrected ${grp.length} values</b> — ${esc(x.why)}<ul>${grp.map(y=>`<li>${lab(y)}: ${y.raw} → ${y.fixed==null?'left blank':y.fixed}</li>`).join('')}</ul></li>`);
+        }); return out.join(''); })()}
       ${fl.filter(x=>x.type==='text').map(x=>`<li><b>Text in a number cell</b> ${lab(x)}: "${esc(x.raw)}" → ${x.fixed??'blank'}. ${esc(x.why)}</li>`).join('')}
-      ${fl.filter(x=>x.type==='dup').map(x=>{ const res=fl.some(y=>y.type==='fix'&&y.key===x.key&&y.pitch===x.pitch); return `<li><b>Repeated row disagrees</b> ${lab(x)}: ${x.primary} vs ${x.repeat} (rows ${x.rows.join(' and ')}). ${res?'Resolved by the correction above.':`Using ${x.primary}.`}</li>`; }).join('')}
+      ${(()=>{ const dp=fl.filter(x=>x.type==='dup');
+        const done=dp.filter(x=>fl.some(y=>y.type==='fix'&&y.key===x.key&&y.pitch===x.pitch));
+        const open_=dp.filter(x=>!done.includes(x));
+        let out='';
+        if(done.length>2) out+=`<li><b>Repeated rows disagree</b> on ${done.length} values (${[...new Set(done.map(x=>MK[x.key]?.label||x.key))].map(esc).join('; ')}). All resolved by the corrections above.</li>`;
+        else out+=done.map(x=>`<li><b>Repeated row disagrees</b> ${lab(x)}: ${x.primary} vs ${x.repeat} (rows ${x.rows.join(' and ')}). Resolved by the correction above.</li>`).join('');
+        out+=open_.map(x=>`<li><b>Repeated row disagrees</b> ${lab(x)}: ${x.primary} vs ${x.repeat} (rows ${x.rows.join(' and ')}). Using ${x.primary}.</li>`).join('');
+        return out; })()}
       ${fl.filter(x=>x.type==='total').map(x=>{ const base=x.key.replace('gt_',''); const res=fl.some(y=>y.type==='fix'&&y.pitch===x.pitch&&y.key===base); return `<li><b>Game total off</b> ${lab(x)}: sheet ${x.sheet}, per-pitch × count = ${x.computed}. ${res?'The sheet total was right; resolved by the per-pitch correction above.':'Using the per-pitch value × count.'}</li>`; }).join('')}
       ${fl.filter(x=>x.type==='summary').map(x=>`<li><b>Session average disagrees</b> ${esc(MK[x.key].label)}: sheet ${x.sheet}, pitch-weighted ${x.computed}.</li>`).join('')}
       ${fl.filter(x=>x.type==='kept').map(x=>`<li><b>Checked and kept</b> ${lab(x)}: ${x.raw}. ${esc(x.why)}</li>`).join('')}
@@ -762,12 +881,13 @@ function render(){
   const app=document.getElementById('app');
   const railFocus = () => { const b=app.querySelector('.rail [aria-pressed=true]'); if(b){ const r=b.parentElement; r.scrollLeft = b.offsetLeft - r.offsetLeft - 8; } };
   if (st.report==='ana'){ app.innerHTML=vAnalytics(); bindAnalytics(app); railFocus(); return; }
-  const V={summary:vSummary,sequence:vSequence,pitches:vPitches,load:vLoad,body:vBody,data:vData,log:vLog}[st.tab];
+  const V={summary:vSummary,sequence:vSequence,pitches:vPitches,shape:vShape,load:vLoad,body:vBody,data:vData,log:vLog}[st.tab];
   app.innerHTML = vRail()+vTabs()+`<section role="tabpanel">${V()}</section>`;
   app.querySelectorAll('.game').forEach(b=>b.onclick=()=>{st.focus=b.dataset.g;render();});
   app.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{st.tab=b.dataset.tab;render();});
   app.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{st.dataMode=b.dataset.mode;render();});
   const g=app.querySelector('#grp'); if(g) g.onchange=()=>{st.dataGroup=g.value;render();};
+  const ls=app.querySelector('#linkSel'); if(ls) ls.onchange=()=>{const l=LINKS[+ls.value]; st.linkM=l.m; st.linkT=l.t; render();};
   const q=app.querySelector('#q'); if(q) q.oninput=()=>{st.q=q.value;const pos=q.selectionStart;render();const n=document.getElementById('q');n.focus();n.setSelectionRange(pos,pos);};
   railFocus();
   const c=app.querySelector('#csv'); if(c) c.onclick=csv;
