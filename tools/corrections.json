@@ -116,6 +116,113 @@
         "keep": true,
         "why": "Reviewed and kept, but worth a look in the source. The curve is his least-tilted pitch at layback in every game too, though the gap here (about 10\u00b0) is bigger than in games (2\u00b0 to 5\u00b0)."
       }
+    ],
+    "2026-09-15": [
+      {
+        "pitch": "CH",
+        "key": "tr_rot_fc",
+        "raw": -15.4,
+        "fixed": -105.5,
+        "why": "Derived from the sheet's own rows: trunk-vs-pelvis at foot strike is -68.0 and pelvis rotation at foot strike is -37.5, which puts trunk rotation at -105.5. The other four pitches that night read -105.5 to -107.5."
+      },
+      {
+        "pitch": "CH",
+        "key": "lh_flex_mer",
+        "raw": 12.6,
+        "fixed": 112.6,
+        "why": "Leading digit dropped. The other four pitches that night read 111.1 to 112.5, and every game reads 108 to 115."
+      },
+      {
+        "pitch": "SI",
+        "key": "th_flex_fc",
+        "raw": 26.9,
+        "fixed": -26.9,
+        "why": "Sign flip. Every other pitch in every capture reads -24.8 to -31.9."
+      },
+      {
+        "pitch": "FF",
+        "key": "tr_flex_max",
+        "raw": -27.6,
+        "fixed": null,
+        "why": "Left blank on purpose. -27.6 is impossible (every other capture reads -68.6 to -87.2) and nothing on the sheet lets us recover the real number, so the four-seam is excluded from this metric rather than carrying a wrong value. Worth re-pulling from the source."
+      },
+      {
+        "pitch": "CH",
+        "key": "th_rot_fc",
+        "raw": 34.73,
+        "fixed": -2.2,
+        "why": "The Hip Loading block on this sheet was pasted one column off: its changeup cell holds a stray value and the sweeper/sinker cells hold the changeup/sweeper numbers. The Trail Hip Rotation block lower on the same sheet reads correctly and matches the other games."
+      },
+      {
+        "pitch": "SW",
+        "key": "th_rot_fc",
+        "raw": -2.2,
+        "fixed": -0.9,
+        "why": "The Hip Loading block on this sheet was pasted one column off: its changeup cell holds a stray value and the sweeper/sinker cells hold the changeup/sweeper numbers. The Trail Hip Rotation block lower on the same sheet reads correctly and matches the other games."
+      },
+      {
+        "pitch": "SI",
+        "key": "th_rot_fc",
+        "raw": -0.9,
+        "fixed": -1.1,
+        "why": "The Hip Loading block on this sheet was pasted one column off: its changeup cell holds a stray value and the sweeper/sinker cells hold the changeup/sweeper numbers. The Trail Hip Rotation block lower on the same sheet reads correctly and matches the other games."
+      },
+      {
+        "pitch": "CH",
+        "key": "th_rot_mer",
+        "raw": -14.5,
+        "fixed": -30.5,
+        "why": "The Hip Loading block on this sheet was pasted one column off: its changeup cell holds a stray value and the sweeper/sinker cells hold the changeup/sweeper numbers. The Trail Hip Rotation block lower on the same sheet reads correctly and matches the other games."
+      },
+      {
+        "pitch": "SW",
+        "key": "th_rot_mer",
+        "raw": -30.5,
+        "fixed": -31.2,
+        "why": "The Hip Loading block on this sheet was pasted one column off: its changeup cell holds a stray value and the sweeper/sinker cells hold the changeup/sweeper numbers. The Trail Hip Rotation block lower on the same sheet reads correctly and matches the other games."
+      },
+      {
+        "pitch": "SI",
+        "key": "th_rot_mer",
+        "raw": -31.2,
+        "fixed": -31.3,
+        "why": "The Hip Loading block on this sheet was pasted one column off: its changeup cell holds a stray value and the sweeper/sinker cells hold the changeup/sweeper numbers. The Trail Hip Rotation block lower on the same sheet reads correctly and matches the other games."
+      },
+      {
+        "pitch": "CH",
+        "key": "th_rot_br",
+        "raw": -15.5,
+        "fixed": -28.4,
+        "why": "The Hip Loading block on this sheet was pasted one column off: its changeup cell holds a stray value and the sweeper/sinker cells hold the changeup/sweeper numbers. The Trail Hip Rotation block lower on the same sheet reads correctly and matches the other games."
+      },
+      {
+        "pitch": "SW",
+        "key": "th_rot_br",
+        "raw": -28.4,
+        "fixed": -31,
+        "why": "The Hip Loading block on this sheet was pasted one column off: its changeup cell holds a stray value and the sweeper/sinker cells hold the changeup/sweeper numbers. The Trail Hip Rotation block lower on the same sheet reads correctly and matches the other games."
+      },
+      {
+        "pitch": "SI",
+        "key": "th_rot_br",
+        "raw": -31,
+        "fixed": -31.3,
+        "why": "The Hip Loading block on this sheet was pasted one column off: its changeup cell holds a stray value and the sweeper/sinker cells hold the changeup/sweeper numbers. The Trail Hip Rotation block lower on the same sheet reads correctly and matches the other games."
+      },
+      {
+        "pitch": "CU",
+        "key": "th_rot_br",
+        "raw": -29,
+        "keep": true,
+        "why": "Reviewed and kept. The repeated row reads -20, but -29 fits the other pitches that night (-28.4 to -31.3) and every other game; -20 is the typo."
+      },
+      {
+        "pitch": "SI",
+        "key": "msrv_br_t",
+        "raw": 0,
+        "keep": true,
+        "why": "Reviewed and kept. The sheet's own session average of 1 ms only works if the sinker is 0; his shoulder peak and release land on the same frame here."
+      }
     ]
   }
 }

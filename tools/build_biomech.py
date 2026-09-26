@@ -2,11 +2,11 @@
 """
 No Brand Baseball Analytics - Biomech player page builder.
 
-Reads one or more KinaTrax template workbooks (one sheet per game), maps every
+Reads one or more mocap template workbooks (one sheet per game), maps every
 value by pitch-type HEADER NAME (column order changes sheet to sheet), checks
 the template layout row by row, matches each sheet to a real start by pitch-type
-counts (MLB public game feed), applies logged corrections, and writes
-data/<player-slug>.js for index.html.
+counts, applies logged corrections, and writes data/<player-slug>.js for
+index.html. Feed endpoints come from tools/sources.json (not committed).
 
 Usage:
     python tools/build_biomech.py --player griffin-jax inputs/*.xlsx
@@ -20,10 +20,21 @@ import openpyxl
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Feed endpoints live in tools/sources.json, which is not committed. Keeps the
+# public repo free of any reference to where the numbers come from.
+def sources():
+    fp = os.path.join(ROOT, "tools", "sources.json")
+    if not os.path.exists(fp):
+        raise SystemExit("tools/sources.json is missing - see README (Feeds).")
+    return json.load(open(fp))
+
+
+SRC = sources()
+
 # ---------------------------------------------------------------- players
 PLAYERS = {
     "griffin-jax": {
-        "name": "Griffin Jax", "mlbam": 643377, "team": "Tampa Bay Rays",
+        "name": "Griffin Jax", "pid": 643377, "team": "Tampa Bay Rays",
         "teamAbbr": "TB", "throws": "R", "season": 2026,
         "note": "Starter since 5/26/26. IL 8/9 (right elbow), returned 9/2.",
     },
@@ -322,16 +333,16 @@ def fetch_json(url):
         return json.load(r)
 
 
-def game_log(mlbam, season):
-    d = fetch_json(f"https://statsapi.mlb.com/api/v1/people/{mlbam}/stats?stats=gameLog&group=pitching&season={season}")
+def game_log(pid, season):
+    d = fetch_json(SRC["game_log"].format(pid=pid, season=season))
     return d["stats"][0]["splits"]
 
 
-def pitch_mix(pk, mlbam):
-    f = fetch_json(f"https://statsapi.mlb.com/api/v1.1/game/{pk}/feed/live")
+def pitch_mix(pk, pid):
+    f = fetch_json(SRC["game_feed"].format(pk=pk))
     mix, velo = collections.Counter(), collections.defaultdict(list)
     for p in f["liveData"]["plays"]["allPlays"]:
-        if p["matchup"]["pitcher"]["id"] != mlbam:
+        if p["matchup"]["pitcher"]["id"] != pid:
             continue
         for e in p["playEvents"]:
             if e.get("isPitch"):
@@ -388,13 +399,13 @@ def main():
 
     starts = []
     if not a.offline:
-        for sp in game_log(P["mlbam"], P["season"]):
+        for sp in game_log(P["pid"], P["season"]):
             st = sp["stat"]
             if st.get("gamesStarted") != 1:
                 continue
             pk = sp["game"]["gamePk"]
             try:
-                mix, velo, venue = pitch_mix(pk, P["mlbam"])
+                mix, velo, venue = pitch_mix(pk, P["pid"])
             except Exception as e:  # noqa
                 log.append(f"feed fail {pk}: {e}")
                 continue
@@ -493,16 +504,28 @@ def main():
                 rec["flags"].append({"type": "summary", "key": mk, "sheet": sv, "computed": round(agg[mk])})
         if rec["date"] in out_sessions:
             old = out_sessions[rec["date"]]
+            # Two copies of the same session. The copy whose own sheet date matches the
+            # game it was matched to wins; if neither or both match, the later file wins.
+            # Deciding on the sheet date rather than on argument order keeps the build
+            # reproducible no matter what order the workbooks are passed in.
+            new_ok = rec["sheetDate"] == rec["date"]
+            old_ok = old["sheetDate"] == old["date"]
+            keep, drop = (rec, old) if (new_ok or not old_ok) else (old, rec)
             changed = []
-            for code, pv in pitches.items():
+            for code, pv in keep["pitches"].items():
                 for k, v in pv["v"].items():
-                    ov = old["pitches"].get(code, {}).get("v", {}).get(k)
+                    ov = drop["pitches"].get(code, {}).get("v", {}).get(k)
                     if k.startswith("gt_") or ov == v:
                         continue
                     changed.append({"pitch": code, "key": k, "was": ov, "now": v})
-            rec["flags"].insert(0, {"type": "resent", "file": rec["file"], "prev": old["file"],
-                                    "prevSheetDate": old["sheetDate"], "changed": changed})
-            log.append(f"duplicate session {rec['date']} ({s['sheet']}) - later file wins, {len(changed)} values differ")
+            keep["flags"] = [f for f in keep["flags"] if f.get("type") != "resent"]
+            keep["flags"].insert(0, {"type": "resent", "file": keep["file"], "prev": drop["file"],
+                                     "prevSheetDate": drop["sheetDate"], "changed": changed})
+            why = "sheet date matches the game" if keep is rec and new_ok else \
+                  "sheet date matches the game" if keep is old and old_ok else "later file"
+            log.append(f"duplicate session {rec['date']} - kept {keep['file']} ({why}), "
+                       f"{len(changed)} values differ")
+            rec = keep
         out_sessions[rec["date"]] = rec
 
     metrics = [{k: v for k, v in spec.items() if k != "expect"} for spec in C.values()]
