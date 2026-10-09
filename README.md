@@ -3,7 +3,11 @@
 Internal player pages. Each pro arm gets one page with two halves:
 **Biomechanics** (mocap, game by game) and **Analytics** (season, starts, shapes, results, locations).
 
-First player: **Griffin Jax** — 7 mocap games (7/11 SEA, 7/17 BOS, 7/28 TEX, 8/2 CWS, 9/2 NYM, 9/15 ATH, 9/20 BOS) plus an April bullpen block, 637 pitches captured; analytics for every 2026 start.
+First player: **Griffin Jax** — 9 mocap outings (7/11 SEA, 7/17 BOS, 7/28 TEX, 8/2 CWS, 9/2 NYM, 9/15 ATH, 9/20 BOS, 9/26 PHI, 10/7 NYY) plus an April bullpen block, 721 pitches captured; analytics for every 2026 appearance that matters.
+
+Three of the nine were captured away from the Trop (7/17 Fenway, 9/26 Citizens Bank Park, 10/7 Yankee Stadium). Each park runs its own camera install, so a one-off park gets a caution banner on the Summary tab and the Shapes tab carries a measured home/road note. Don't read a road capture as a mechanical change.
+
+**Postseason** is pulled and shown but never folded in: season totals on the Analytics side cover regular-season starts only, playoff outings get their own card and a gold `playoffs` chip on both rails, and a relief appearance says so. A game with any pitch type under 5 captured pitches says that too.
 
 ## Open it
 - Hosted: `https://<user>.github.io/<repo>/` (Jax is the default page)
@@ -27,7 +31,7 @@ First player: **Griffin Jax** — 7 mocap games (7/11 SEA, 7/17 BOS, 7/28 TEX, 8
 ```
 python tools/build_analytics.py --player griffin-jax
 ```
-Pulls the season's pitch-level file and the league movement tables, cross-checks pitch counts, strikeouts, walks and batters faced against the box score, and writes `data/<slug>.analytics.js`. Run it after `build_biomech.py` so newly captured games pick up the "mocap" chip. Game Review summaries live in `data/<slug>.reviews.js` (hand-written; one entry per reviewed start).
+Pulls the season's pitch-level file (regular season **and** postseason) and the league movement tables, cross-checks pitch counts, strikeouts, walks and batters faced against the box score, and writes `data/<slug>.analytics.js`. Run it after `build_biomech.py` so newly captured games pick up the "mocap" chip. Game Review summaries live in `data/<slug>.reviews.js` (hand-written; one entry per reviewed start).
 
 ## Add a player
 Add them to `PLAYERS` in `tools/build_biomech.py` and `tools/build_analytics.py` (name, player id, team, throws, season), then build with `--player <slug>`.

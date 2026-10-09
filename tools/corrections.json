@@ -223,6 +223,153 @@
         "keep": true,
         "why": "Reviewed and kept. The sheet's own session average of 1 ms only works if the sinker is 0; his shoulder peak and release land on the same frame here."
       }
+    ],
+    "2026-09-26": [
+      {
+        "pitch": "CH",
+        "key": "plane_eff",
+        "raw": 55.6,
+        "fixed": null,
+        "why": "Left blank on purpose. 55.6 is 15.5 points clear of every other pitch that night and 7.4 above the highest reading in the whole file, while the changeup's shoulder abduction (73.5 / 89.1 / 93.7), arm slot and layback that night are all normal - the geometry that drives this number did not move, so the number should not have either. The changeup has run 1.09 to 1.26 times the four-seam's plane efficiency in the other eight captures, which puts the real value near 45.6 (a single mistyped digit), but nothing on this sheet lets us recover it. The changeup is excluded from this metric rather than carrying a wrong value. Worth re-pulling from the source."
+      }
+    ],
+    "2026-10-07": [
+      {
+        "pitch": "SI",
+        "key": "lh_flex_fc",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "SI",
+        "key": "lh_flex_mer",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "SI",
+        "key": "lh_flex_br",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "CH",
+        "key": "lh_flex_fc",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "CH",
+        "key": "lh_flex_mer",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "CH",
+        "key": "lh_flex_br",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "FC",
+        "key": "lh_flex_fc",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "FC",
+        "key": "lh_flex_mer",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "FC",
+        "key": "lh_flex_br",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "SW",
+        "key": "lh_flex_fc",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "SW",
+        "key": "lh_flex_mer",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "SW",
+        "key": "lh_flex_br",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "FF",
+        "key": "lh_flex_fc",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "FF",
+        "key": "lh_flex_mer",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "FF",
+        "key": "lh_flex_br",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "CU",
+        "key": "lh_flex_fc",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "CU",
+        "key": "lh_flex_mer",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "CU",
+        "key": "lh_flex_br",
+        "keep": true,
+        "why": "Reviewed and kept. Rows 148-150 repeat Lead Hip Flexion lower on the sheet, and in all nine other captures they are an exact copy of rows 126-128. On this sheet the repeat block is corrupt - it reads roughly 100\u00b0 low on every pitch type, by an amount that varies from 96 to 114, so it is not a recoverable offset. The primary block (126-128) reads 77.0 to 80.9 at foot strike, 115.0 to 117.9 at layback and 118.2 to 122.1 at release, all inside his normal range in every game, so the primary block is kept and the repeat ignored."
+      },
+      {
+        "pitch": "FF",
+        "key": "th_rot_br",
+        "raw": -29.0,
+        "fixed": -31.0,
+        "why": "The repeated row lower on the sheet reads -31.0 and the other five pitch types match between the two rows exactly; only the four-seam disagrees. -31.0 is the right one: his four-seam has sat within 1.1\u00b0 of his sinker at this point in all nine other captures, the sinker reads -31.3 here, and -29.0 would be the furthest the two have ever been apart."
+      },
+      {
+        "pitch": "CH",
+        "key": "lh_rot_mer",
+        "raw": 10.3,
+        "fixed": -10.3,
+        "why": "Sign flip. Every other pitch in this game reads -8.7 to -14.6 and every pitch in every capture reads negative (-2.4 to -14.6); -10.3 sits in the middle of the others that night."
+      },
+      {
+        "pitch": "CH",
+        "key": "mhv_br_t",
+        "raw": 2,
+        "fixed": -2,
+        "why": "Sign flip. His hand speed peaks before release on every pitch of every capture (-1 to -8 ms). The other four pitch types that night read -1 to -2."
+      },
+      {
+        "pitch": "FC",
+        "key": "mhv_br_t",
+        "raw": 2,
+        "fixed": -2,
+        "why": "Sign flip. His hand speed peaks before release on every pitch of every capture (-1 to -8 ms). The other four pitch types that night read -1 to -2."
+      }
     ]
   }
 }

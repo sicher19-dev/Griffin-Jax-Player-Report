@@ -145,7 +145,10 @@ def main():
 
     log = json.loads(get(SRC["game_log"].format(pid=sid, season=yr),
                          f"{a.player}-{yr}-log.json", a.offline))
-    splits = [s for s in log["stats"][0]["splits"] if s["stat"].get("gamesStarted") == 1]
+    # Regular season: starts only (relief outings are not part of this report).
+    # Postseason: every appearance, whatever the role - they are few and all of them matter.
+    splits = [s for s in log["stats"][0]["splits"]
+              if s["stat"].get("gamesStarted") == 1 or s.get("gameType") not in (None, "R")]
 
     mocap = set()
     bm = os.path.join(ROOT, "data", f"{a.player}.js")
@@ -164,7 +167,10 @@ def main():
         rec = {
             "date": s["date"], "pk": pk, "home": s["isHome"], "opp": s["opponent"]["name"],
             "oppAbbr": OPP.get(s["opponent"]["name"], s["opponent"]["name"][:3].upper()),
-            "role": "starter" if s["date"] >= P["window_start"] else "opener",
+            "post": s.get("gameType") not in (None, "R"),
+            "started": s["stat"].get("gamesStarted") == 1,
+            "role": ("relief" if s["stat"].get("gamesStarted") != 1 else
+                     "starter" if s["date"] >= P["window_start"] else "opener"),
             "mocap": s["date"] in mocap,
             "line": {"ip": st["inningsPitched"], "h": st["hits"], "r": st["runs"], "er": st["earnedRuns"],
                      "bb": st["baseOnBalls"], "k": st["strikeOuts"], "hr": st["homeRuns"], "pc": st["numberOfPitches"],
@@ -184,9 +190,11 @@ def main():
                        for r in g.itertuples()]
         starts.append(rec)
 
-    win = d[d.game_pk.isin([s["pk"] for s in starts if s["role"] == "starter"])]
+    # Season totals are regular-season starts only. Postseason is reported on its own.
+    reg = [s for s in starts if s["role"] == "starter" and not s["post"]]
+    win = d[d.game_pk.isin([s["pk"] for s in reg])]
     season = {
-        "starts": sum(1 for s in starts if s["role"] == "starter"),
+        "starts": len(reg),
         "cc": count_control(win), "all": pitch_block(win),
         "pitches": {c: pitch_block(x) for c, x in win.groupby("code")},
         "byHand": {h: {c: int(n) for c, n in x.groupby("code").size().items()} for h, x in win.groupby("stand")},
@@ -202,8 +210,8 @@ def main():
     win = win.assign(state=win.apply(state, axis=1))
     for stt, x in win.groupby("state"):
         season["byCount"][stt] = {h: {c: int(n) for c, n in y.groupby("code").size().items()} for h, y in x.groupby("stand")}
-    ip_outs = sum(int(str(s["line"]["ip"]).split(".")[0]) * 3 + int(str(s["line"]["ip"]).split(".")[1]) for s in starts if s["role"] == "starter")
-    tot = {k: sum(s["line"][k] for s in starts if s["role"] == "starter") for k in ["h", "r", "er", "bb", "k", "hr", "pc", "bf"]}
+    ip_outs = sum(int(str(s["line"]["ip"]).split(".")[0]) * 3 + int(str(s["line"]["ip"]).split(".")[1]) for s in reg)
+    tot = {k: sum(s["line"][k] for s in reg) for k in ["h", "r", "er", "bb", "k", "hr", "pc", "bf"]}
     season["line"] = {**tot, "ip": f"{ip_outs // 3}.{ip_outs % 3}", "era": r1(9 * tot["er"] / (ip_outs / 3), 2),
                       "kPct": r1(100 * tot["k"] / tot["bf"]), "bbPct": r1(100 * tot["bb"] / tot["bf"]),
                       "whip": r1((tot["h"] + tot["bb"]) / (ip_outs / 3), 2)}

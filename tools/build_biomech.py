@@ -401,7 +401,10 @@ def main():
     if not a.offline:
         for sp in game_log(P["pid"], P["season"]):
             st = sp["stat"]
-            if st.get("gamesStarted") != 1:
+            post = sp.get("gameType") not in (None, "R")
+            # Regular-season relief outings are not captured, so only starts are matched.
+            # Postseason is different: he may be used in any role, so take every appearance.
+            if st.get("gamesStarted") != 1 and not post:
                 continue
             pk = sp["game"]["gamePk"]
             try:
@@ -411,6 +414,7 @@ def main():
                 continue
             starts.append({"date": sp["date"], "pk": pk, "home": sp["isHome"],
                            "opp": sp["opponent"]["name"], "venue": venue, "mix": mix, "velo": velo,
+                           "post": post, "started": st.get("gamesStarted") == 1,
                            "line": {"ip": st["inningsPitched"], "h": st["hits"], "r": st["runs"],
                                     "er": st["earnedRuns"], "bb": st["baseOnBalls"],
                                     "k": st["strikeOuts"], "pc": st["numberOfPitches"]},
@@ -451,7 +455,8 @@ def main():
                 rec.update(date=g["date"], pk=g["pk"], home=g["home"], opp=g["opp"],
                            oppAbbr=OPP_ABBR.get(g["opp"], g["opp"][:3].upper()),
                            venue=g["venue"], line=g["line"], thrown=g["mix"], velo=g["velo"],
-                           verified=True, missed=diff)
+                           verified=True, missed=diff,
+                           post=bool(g.get("post")), started=g.get("started", True))
                 if g["date"] != s["sheetDate"]:
                     rec["flags"].append({"type": "date", "sheet": s["sheetDate"], "actual": g["date"],
                                          "why": "pitch mix matches this start exactly" if diff == 0 else f"pitch mix matches within {diff}"})

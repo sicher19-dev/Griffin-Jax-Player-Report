@@ -19,6 +19,8 @@
    "FC": 93.2,
    "SI": 95.9
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "2.1",
    "h": 1,
@@ -53,6 +55,8 @@
    "SW": 88.4,
    "CH": 90.8
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "2.2",
    "h": 1,
@@ -86,6 +90,8 @@
    "SI": 95.5,
    "FC": 92.4
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "4.0",
    "h": 4,
@@ -119,6 +125,8 @@
    "FC": 92.9,
    "CU": 83.6
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 4,
@@ -152,6 +160,8 @@
    "SI": 95.8,
    "CU": 85.8
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 3,
@@ -185,6 +195,8 @@
    "FC": 92.0,
    "CU": 85.7
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "2.0",
    "h": 4,
@@ -218,6 +230,8 @@
    "SI": 94.9,
    "SW": 87.5
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "4.0",
    "h": 7,
@@ -251,6 +265,8 @@
    "CH": 91.2,
    "FF": 95.9
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 3,
@@ -284,6 +300,8 @@
    "CH": 91.3,
    "CU": 85.2
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 5,
@@ -317,6 +335,8 @@
    "FC": 93.0,
    "SW": 86.9
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 4,
@@ -348,6 +368,8 @@
    "CU": 85.6,
    "CH": 90.6
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 5,
@@ -379,6 +401,8 @@
    "CH": 90.2,
    "FF": 96.3
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "6.0",
    "h": 5,
@@ -410,6 +434,8 @@
    "CH": 91.2,
    "SI": 96.0
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 1,
@@ -441,6 +467,8 @@
    "CH": 91.1,
    "CU": 85.1
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 4,
@@ -472,6 +500,8 @@
    "CH": 90.3,
    "CU": 84.3
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 8,
@@ -503,6 +533,8 @@
    "CH": 90.2,
    "CU": 83.9
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "6.0",
    "h": 3,
@@ -534,6 +566,8 @@
    "SW": 86.3,
    "CU": 84.8
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.2",
    "h": 5,
@@ -565,6 +599,8 @@
    "SI": 94.6,
    "CH": 90.3
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 4,
@@ -596,6 +632,8 @@
    "FF": 95.0,
    "CU": 84.4
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "2.2",
    "h": 7,
@@ -627,6 +665,8 @@
    "CH": 90.1,
    "CU": 84.7
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 2,
@@ -658,6 +698,8 @@
    "CH": 89.6,
    "CU": 84.5
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 2,
@@ -689,6 +731,8 @@
    "CU": 84.3,
    "FF": 95.7
   },
+  "post": false,
+  "started": true,
   "line": {
    "ip": "5.0",
    "h": 3,
@@ -697,6 +741,74 @@
    "bb": 2,
    "k": 5,
    "pc": 74
+  },
+  "dec": "W"
+ },
+ {
+  "date": "2026-09-26",
+  "pk": 823407,
+  "home": false,
+  "opp": "Philadelphia Phillies",
+  "venue": "Citizens Bank Park",
+  "mix": {
+   "SI": 18,
+   "SW": 11,
+   "CH": 10,
+   "FF": 9,
+   "CU": 4
+  },
+  "velo": {
+   "SI": 94.6,
+   "SW": 86.8,
+   "CH": 90.0,
+   "FF": 95.1,
+   "CU": 84.7
+  },
+  "post": false,
+  "started": true,
+  "line": {
+   "ip": "3.0",
+   "h": 2,
+   "r": 0,
+   "er": 0,
+   "bb": 0,
+   "k": 1,
+   "pc": 52
+  },
+  "dec": "W"
+ },
+ {
+  "date": "2026-10-07",
+  "pk": 849838,
+  "home": false,
+  "opp": "New York Yankees",
+  "venue": "Yankee Stadium",
+  "mix": {
+   "SI": 5,
+   "CH": 12,
+   "SW": 7,
+   "FF": 3,
+   "FC": 1,
+   "CU": 4
+  },
+  "velo": {
+   "SI": 96.4,
+   "CH": 91.8,
+   "SW": 88.1,
+   "FF": 96.9,
+   "FC": 89.9,
+   "CU": 85.8
+  },
+  "post": true,
+  "started": false,
+  "line": {
+   "ip": "2.0",
+   "h": 1,
+   "r": 1,
+   "er": 1,
+   "bb": 1,
+   "k": 4,
+   "pc": 32
   },
   "dec": "W"
  }
